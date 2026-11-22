@@ -2,6 +2,7 @@ package com.rocketdevops.mobile.ui.lesson
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,6 +45,7 @@ import com.rocketdevops.mobile.ui.components.PrimaryButton
 import com.rocketdevops.mobile.ui.components.ProgressBar
 import com.rocketdevops.mobile.ui.components.StatusChip
 import com.rocketdevops.mobile.ui.components.TextAction
+import com.rocketdevops.mobile.ui.components.revealOnEnter
 import com.rocketdevops.mobile.ui.theme.AppShapes
 import com.rocketdevops.mobile.ui.theme.AppTheme
 import com.rocketdevops.mobile.ui.theme.Dimens
@@ -133,7 +135,10 @@ private fun LessonContent(
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.semantics { heading() },
             )
-            screen.blocks.forEach { LessonBlockView(it) }
+            // Paragraphs, code and tips appear one after another on first open.
+            screen.blocks.forEachIndexed { index, block ->
+                Box(modifier = Modifier.revealOnEnter(index)) { LessonBlockView(block) }
+            }
 
             Spacer(Modifier.height(Spacing.md))
             if (screen.isComplete) {

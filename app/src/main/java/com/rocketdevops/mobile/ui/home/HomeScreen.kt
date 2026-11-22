@@ -38,9 +38,11 @@ import com.rocketdevops.mobile.ui.components.IconCircleButton
 import com.rocketdevops.mobile.ui.components.IconTile
 import com.rocketdevops.mobile.ui.components.ListRow
 import com.rocketdevops.mobile.ui.components.LoadingSkeleton
+import com.rocketdevops.mobile.ui.components.RollingText
 import com.rocketdevops.mobile.ui.components.SurfaceCard
 import com.rocketdevops.mobile.ui.components.WeekDay
 import com.rocketdevops.mobile.ui.components.WeekStrip
+import com.rocketdevops.mobile.ui.components.revealOnEnter
 import com.rocketdevops.mobile.ui.theme.AppTheme
 import com.rocketdevops.mobile.ui.theme.RocketDevOpsTheme
 import com.rocketdevops.mobile.ui.theme.Spacing
@@ -88,7 +90,12 @@ private fun HomeContent(
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
         // Header: avatar, greeting, settings
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        // Each block fades in and rises slightly, top to bottom (revealOnEnter), on first visit.
+        Row(
+            modifier = Modifier.revealOnEnter(0),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
             Avatar(state.initials)
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -104,10 +111,10 @@ private fun HomeContent(
         }
 
         // Daily streak
-        SurfaceCard(modifier = Modifier.fillMaxWidth()) {
+        SurfaceCard(modifier = Modifier.fillMaxWidth().revealOnEnter(1)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Daily streak", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                Text(
+                RollingText(
                     text = if (state.streakDays == 0) "Start today" else plural(state.streakDays, "day"),
                     style = MaterialTheme.typography.labelLarge,
                     color = colors.primaryText,
@@ -128,13 +135,21 @@ private fun HomeContent(
             actionLabel = card.actionLabel,
             onAction = { onOpen(card.target) },
             progress = card.progress,
+            modifier = Modifier.revealOnEnter(2),
         )
 
         // Tracks
         Column {
-            Text("Tracks", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            Text(
+                "Tracks",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .revealOnEnter(3)
+                    .semantics { heading() },
+            )
             state.tracks.forEachIndexed { index, track ->
                 ListRow(
+                    modifier = Modifier.revealOnEnter(4 + index),
                     title = track.title,
                     subtitle = track.subtitle,
                     leading = { IconTile(track.icon.toImageVector()) },

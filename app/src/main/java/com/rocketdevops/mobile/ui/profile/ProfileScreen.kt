@@ -1,6 +1,7 @@
 package com.rocketdevops.mobile.ui.profile
 
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +26,9 @@ import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,14 +56,17 @@ import com.rocketdevops.mobile.ui.components.IconTile
 import com.rocketdevops.mobile.ui.components.LoadingSkeleton
 import com.rocketdevops.mobile.ui.components.MetricTile
 import com.rocketdevops.mobile.ui.components.SurfaceCard
+import com.rocketdevops.mobile.ui.components.revealOnEnter
 import com.rocketdevops.mobile.ui.theme.AppShapes
 import com.rocketdevops.mobile.ui.theme.AppTheme
 import com.rocketdevops.mobile.ui.theme.Dimens
+import com.rocketdevops.mobile.ui.theme.LocalReduceMotion
 import com.rocketdevops.mobile.ui.theme.Motion
 import com.rocketdevops.mobile.ui.theme.RocketDevOpsTheme
 import com.rocketdevops.mobile.ui.theme.Spacing
 import com.rocketdevops.mobile.ui.theme.motionSpec
 import java.time.LocalDate
+import kotlinx.coroutines.delay
 
 @Composable
 fun ProfileRoute(
@@ -111,19 +117,19 @@ private fun ProfileContent(state: ProfileUiState.Ready) {
             .padding(horizontal = Spacing.screenHorizontal, vertical = Spacing.xs),
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+        Row(modifier = Modifier.revealOnEnter(0), horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
             MetricTile(state.labsDone.toString(), "Labs", Modifier.weight(1f))
             MetricTile(state.averageQuiz, "Avg quiz", Modifier.weight(1f))
             MetricTile(state.streakDays.toString(), "Streak", Modifier.weight(1f))
         }
 
-        SurfaceCard(modifier = Modifier.fillMaxWidth()) {
+        SurfaceCard(modifier = Modifier.fillMaxWidth().revealOnEnter(1)) {
             Text("Last 7 days", style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
             ActivityChart(state.lastSevenDays)
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.revealOnEnter(2), verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     "Achievements",
                     style = MaterialTheme.typography.titleMedium,
@@ -137,7 +143,9 @@ private fun ProfileContent(state: ProfileUiState.Ready) {
                     color = colors.primaryText,
                 )
             }
-            state.achievements.forEach { AchievementTile(it) }
+            state.achievements.forEachIndexed { index, row ->
+                AchievementTile(row, Modifier.revealOnEnter(3 + index))
+            }
         }
         Spacer(Modifier.height(Spacing.md))
     }
@@ -165,9 +173,18 @@ private fun ActivityChart(days: List<DayActivity>) {
             horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
             verticalAlignment = Alignment.Bottom,
         ) {
-            days.forEach { day ->
+            days.forEachIndexed { index, day ->
                 val target = if (day.count == 0) 0.06f else day.count.toFloat() / max
-                val fraction by animateFloatAsState(target, motionSpec(Motion.LONG), label = "bar")
+                // Bars grow from the bottom one after another (left to right) when Profile opens,
+                // then slide to new heights when activity changes.
+                val reduceMotion = LocalReduceMotion.current
+                val bar = remember { Animatable(if (reduceMotion) target else 0f) }
+                val growSpec = motionSpec<Float>(Motion.LONG)
+                LaunchedEffect(target) {
+                    if (bar.value == 0f) delay(Motion.STAGGER.toLong() * index)
+                    bar.animateTo(target, growSpec)
+                }
+                val fraction = bar.value
                 val color = when {
                     day.isToday -> colors.primary
                     day.count == 0 -> colors.line
@@ -204,11 +221,11 @@ private fun ActivityChart(days: List<DayActivity>) {
 
 /** Unlocked: a filled card. Locked: a dashed outline with muted text, so it reads as "not yet". */
 @Composable
-private fun AchievementTile(row: AchievementRow) {
+private fun AchievementTile(row: AchievementRow, modifier: Modifier = Modifier) {
     val colors = AppTheme.colors
     val shape = AppShapes.card
     val dashColor = colors.line
-    val base = Modifier
+    val base = modifier
         .fillMaxWidth()
         .semantics(mergeDescendants = true) {
             contentDescription = "${row.achievement.title}, ${if (row.unlocked) "unlocked" else "locked"}, ${row.detail}"
@@ -233,10 +250,12 @@ private fun AchievementTile(row: AchievementRow) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
+        val tileBg by animateColorAsState(if (row.unlocked) colors.primary else colors.background, motionSpec(Motion.LONG), label = "badgeBg")
+        val tileFg by animateColorAsState(if (row.unlocked) colors.onPrimary else colors.inkSecondary, motionSpec(Motion.LONG), label = "badgeFg")
         IconTile(
             icon = row.achievement.icon.toImageVector(),
-            containerColor = if (row.unlocked) colors.primary else colors.background,
-            contentColor = if (row.unlocked) colors.onPrimary else colors.inkSecondary,
+            containerColor = tileBg,
+            contentColor = tileFg,
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(

@@ -1,10 +1,20 @@
 package com.rocketdevops.mobile.ui.quiz
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -186,6 +196,7 @@ private fun QuizContent(
 ) {
     val colors = AppTheme.colors
     val haptic = LocalHapticFeedback.current
+    val reduceMotion = LocalReduceMotion.current
 
     Column(
         modifier = modifier
@@ -234,46 +245,56 @@ private fun QuizContent(
         )
 
         // Scrollable middle: question, answers, explanation.
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-        ) {
-            if (screen.streak >= STREAK_TO_SHOW) {
-                StatusChip(
-                    text = "${screen.streak} in a row",
-                    container = colors.warning.container,
-                    onContainer = colors.warning.onContainer,
-                    icon = Icons.Outlined.LocalFireDepartment,
-                )
-            }
-            Text(
-                screen.prompt,
-                style = MaterialTheme.typography.titleLarge,
+        // A new question slides in from the right while the old one fades out to the left
+        // (the same shared-axis motion as screen changes). Answering only animates colours.
+        AnimatedContent(
+            targetState = screen,
+            contentKey = { it.questionNumber },
+            transitionSpec = { questionTransition(reduceMotion) },
+            modifier = Modifier.weight(1f),
+            label = "question",
+        ) { shown ->
+            Column(
                 modifier = Modifier
-                    .padding(vertical = Spacing.xs)
-                    .semantics { heading() },
-            )
-
-            if (screen.type == QuestionType.TYPE_THE_COMMAND) {
-                CommandAnswerField(screen, typedAnswer, actions)
-            } else {
-                screen.options.forEach { option ->
-                    QuizOptionRow(
-                        text = option.text,
-                        state = option.state,
-                        isCode = screen.isCode,
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) // light tick
-                            actions.onSelectOption(option.text)
-                        },
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+            ) {
+                if (shown.streak >= STREAK_TO_SHOW) {
+                    StatusChip(
+                        text = "${shown.streak} in a row",
+                        container = colors.warning.container,
+                        onContainer = colors.warning.onContainer,
+                        icon = Icons.Outlined.LocalFireDepartment,
                     )
                 }
-            }
+                Text(
+                    shown.prompt,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                        .padding(vertical = Spacing.xs)
+                        .semantics { heading() },
+                )
 
-            WhyCard(screen)
-            Spacer(Modifier.padding(bottom = Spacing.xs))
+                if (shown.type == QuestionType.TYPE_THE_COMMAND) {
+                    CommandAnswerField(shown, typedAnswer, actions)
+                } else {
+                    shown.options.forEach { option ->
+                        QuizOptionRow(
+                            text = option.text,
+                            state = option.state,
+                            isCode = shown.isCode,
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) // light tick
+                                actions.onSelectOption(option.text)
+                            },
+                        )
+                    }
+                }
+
+                WhyCard(shown)
+                Spacer(Modifier.padding(bottom = Spacing.xs))
+            }
         }
 
         // One primary action, always at the bottom.
@@ -363,7 +384,9 @@ private fun WhyCard(screen: QuizScreenState) {
     val reduceMotion = LocalReduceMotion.current
     AnimatedVisibility(
         visible = screen.isLocked,
-        enter = if (reduceMotion) EnterTransition.None else fadeIn(tween(Motion.MEDIUM)),
+        enter = if (reduceMotion) EnterTransition.None else
+            expandVertically(tween(Motion.MEDIUM, easing = Motion.StandardEasing)) +
+                fadeIn(tween(Motion.MEDIUM, delayMillis = Motion.FADE_OUT)),
     ) {
         val correct = screen.lastAnswerCorrect == true
         val verdictColor = if (correct) colors.success.onContainer else colors.error.onContainer
@@ -404,6 +427,20 @@ private fun WhyCard(screen: QuizScreenState) {
 }
 
 private const val STREAK_TO_SHOW = 2
+
+/** Next question: shared axis X, like moving to a new screen. Instant with animations off. */
+@Suppress("UnusedReceiverParameter") // the scope gives access to togetherWith / using
+private fun AnimatedContentTransitionScope<QuizScreenState>.questionTransition(reduceMotion: Boolean): ContentTransform {
+    val change = if (reduceMotion) {
+        EnterTransition.None togetherWith ExitTransition.None
+    } else {
+        (slideInHorizontally(tween(Motion.SCREEN, easing = Motion.EnterEasing)) { (it * Motion.SLIDE_FRACTION).toInt() } +
+            fadeIn(tween(Motion.FADE_IN, delayMillis = Motion.FADE_OUT, easing = Motion.EnterEasing))) togetherWith
+            (slideOutHorizontally(tween(Motion.SCREEN, easing = Motion.EnterEasing)) { -(it * Motion.SLIDE_FRACTION).toInt() } +
+                fadeOut(tween(Motion.FADE_OUT)))
+    }
+    return change.using(SizeTransform(clip = false))
+}
 private const val TICK_MS = 1_000L
 
 // ---------------------------------------------------------------- previews

@@ -1,6 +1,7 @@
 package com.rocketdevops.mobile.ui.cheats
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +54,8 @@ import com.rocketdevops.mobile.ui.components.SearchField
 import com.rocketdevops.mobile.ui.theme.AppTextStyles
 import com.rocketdevops.mobile.ui.theme.AppTheme
 import com.rocketdevops.mobile.ui.theme.Dimens
+import com.rocketdevops.mobile.ui.theme.LocalReduceMotion
+import com.rocketdevops.mobile.ui.theme.Motion
 import com.rocketdevops.mobile.ui.theme.RocketDevOpsTheme
 import com.rocketdevops.mobile.ui.theme.Spacing
 import kotlinx.coroutines.delay
@@ -83,6 +86,7 @@ fun CheatSheetScreen(
     modifier: Modifier = Modifier,
 ) {
     val colors = AppTheme.colors
+    val reduceMotion = LocalReduceMotion.current
     Column(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.padding(horizontal = Spacing.screenHorizontal, vertical = Spacing.xs),
@@ -117,7 +121,17 @@ fun CheatSheetScreen(
             } else {
                 LazyColumn(contentPadding = PaddingValues(horizontal = Spacing.screenHorizontal, vertical = Spacing.xs)) {
                     itemsIndexed(state.results, key = { _, entry -> entry.id }) { index, entry ->
-                        CheatRow(entry, showDivider = index < state.results.lastIndex)
+                        // animateItem: when the search or chip changes, rows fade out, fade in and
+                        // glide to their new places instead of jumping.
+                        CheatRow(
+                            entry,
+                            showDivider = index < state.results.lastIndex,
+                            modifier = if (reduceMotion) Modifier else Modifier.animateItem(
+                                fadeInSpec = tween(Motion.MEDIUM, easing = Motion.StandardEasing),
+                                placementSpec = tween(Motion.MEDIUM, easing = Motion.StandardEasing),
+                                fadeOutSpec = tween(Motion.SHORT),
+                            ),
+                        )
                     }
                     item(key = "footer") {
                         Text(
@@ -138,7 +152,7 @@ fun CheatSheetScreen(
  * and a copy button. If the entry has common flags, tapping the row shows them.
  */
 @Composable
-private fun CheatRow(entry: CheatEntry, showDivider: Boolean) {
+private fun CheatRow(entry: CheatEntry, showDivider: Boolean, modifier: Modifier = Modifier) {
     val colors = AppTheme.colors
     val clipboard = LocalClipboardManager.current
     val haptics = LocalHapticFeedback.current
@@ -153,7 +167,7 @@ private fun CheatRow(entry: CheatEntry, showDivider: Boolean) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

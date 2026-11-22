@@ -1,5 +1,6 @@
 package com.rocketdevops.mobile.ui.labs
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,9 +31,12 @@ import com.rocketdevops.mobile.ui.components.IconTile
 import com.rocketdevops.mobile.ui.components.ListRow
 import com.rocketdevops.mobile.ui.components.LoadingSkeleton
 import com.rocketdevops.mobile.ui.components.StatusChip
+import com.rocketdevops.mobile.ui.components.revealOnEnter
 import com.rocketdevops.mobile.ui.theme.AppTheme
+import com.rocketdevops.mobile.ui.theme.Motion
 import com.rocketdevops.mobile.ui.theme.RocketDevOpsTheme
 import com.rocketdevops.mobile.ui.theme.Spacing
+import com.rocketdevops.mobile.ui.theme.motionSpec
 
 /**
  * Labs tab, "route" version: gets the ViewModel and passes plain state down.
@@ -82,26 +86,36 @@ fun LabsScreen(
             is LabsUiState.Ready -> LazyColumn(
                 contentPadding = PaddingValues(horizontal = Spacing.screenHorizontal, vertical = Spacing.xs),
             ) {
+                // Position on screen, top to bottom, for the staggered entry.
+                var order = 0
                 state.sections.forEach { section ->
+                    val headerOrder = order++
+                    val firstLabOrder = order
+                    order += section.labs.size
                     item(key = "header-${section.trackId}") {
                         Text(
                             text = section.trackTitle,
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier
                                 .padding(top = Spacing.md, bottom = Spacing.xxs)
+                                .revealOnEnter(headerOrder)
                                 .semantics { heading() },
                         )
                     }
                     itemsIndexed(section.labs, key = { _, lab -> lab.id }) { index, lab ->
                         ListRow(
+                            modifier = Modifier.revealOnEnter(firstLabOrder + index),
                             title = lab.title,
                             subtitle = lab.subtitle,
                             leading = { IconTile(section.icon.toImageVector()) },
                             trailing = {
-                                if (lab.done) {
-                                    StatusChip("Done", colors.success.container, colors.success.onContainer, icon = Icons.Outlined.Check)
-                                } else {
-                                    Chevron()
+                                // A lab finished a moment ago cross-fades from the chevron to "Done".
+                                Crossfade(targetState = lab.done, animationSpec = motionSpec(Motion.MEDIUM), label = "labDone") { done ->
+                                    if (done) {
+                                        StatusChip("Done", colors.success.container, colors.success.onContainer, icon = Icons.Outlined.Check)
+                                    } else {
+                                        Chevron()
+                                    }
                                 }
                             },
                             onClick = { onOpenLab(lab.id) },

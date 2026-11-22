@@ -373,7 +373,7 @@ private fun SuccessOverlay(title: String, onBack: () -> Unit, onKeepPractising: 
     val reduceMotion = LocalReduceMotion.current
     val scale = remember { Animatable(if (reduceMotion) 1f else SUCCESS_START_SCALE) }
     LaunchedEffect(Unit) {
-        scale.animateTo(1f, tween(Motion.LONG, easing = Motion.StandardEasing))
+        scale.animateTo(1f, tween(Motion.LONG, easing = Motion.EnterEasing))
     }
 
     Box(

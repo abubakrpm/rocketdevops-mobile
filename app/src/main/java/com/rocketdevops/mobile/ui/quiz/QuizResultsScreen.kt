@@ -1,6 +1,7 @@
 package com.rocketdevops.mobile.ui.quiz
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ import com.rocketdevops.mobile.ui.components.LoadingSkeleton
 import com.rocketdevops.mobile.ui.components.PrimaryButton
 import com.rocketdevops.mobile.ui.components.ProgressRing
 import com.rocketdevops.mobile.ui.components.SecondaryButton
+import com.rocketdevops.mobile.ui.components.revealOnEnter
 import com.rocketdevops.mobile.ui.theme.AppTextStyles
 import com.rocketdevops.mobile.ui.theme.AppTheme
 import com.rocketdevops.mobile.ui.theme.Dimens
@@ -81,19 +83,28 @@ fun QuizResultsScreen(
                         trackColor = colors.surface,
                         label = "${r.score} / ${r.total}",
                         labelStyle = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.revealOnEnter(0), // the ring also fills up from zero
                     )
                     Text(
                         r.headline,
                         style = MaterialTheme.typography.headlineMedium,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.semantics { heading() },
+                        modifier = Modifier
+                            .revealOnEnter(1)
+                            .semantics { heading() },
                     )
                     val subtitle = when {
                         r.wasRetry -> "Retry of the questions you missed in ${r.quizTitle}"
                         r.bestScore != null -> "Best score so far: ${r.bestScore} / ${r.total}"
                         else -> r.quizTitle
                     }
-                    Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = colors.inkSecondary, textAlign = TextAlign.Center)
+                    Text(
+                        subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.inkSecondary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.revealOnEnter(2),
+                    )
 
                     if (r.toReview.isNotEmpty()) {
                         Text(
@@ -102,9 +113,12 @@ fun QuizResultsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = Spacing.md)
+                                .revealOnEnter(3)
                                 .semantics { heading() },
                         )
-                        r.toReview.forEach { ReviewRow(it) }
+                        r.toReview.forEachIndexed { index, item ->
+                            Box(modifier = Modifier.revealOnEnter(4 + index)) { ReviewRow(item) }
+                        }
                     }
                 }
 

@@ -1,6 +1,6 @@
 package com.rocketdevops.mobile.ui.components
 
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,10 +34,24 @@ import androidx.compose.ui.unit.Dp
 import com.rocketdevops.mobile.ui.theme.AppShapes
 import com.rocketdevops.mobile.ui.theme.AppTheme
 import com.rocketdevops.mobile.ui.theme.Dimens
+import com.rocketdevops.mobile.ui.theme.LocalReduceMotion
 import com.rocketdevops.mobile.ui.theme.Motion
 import com.rocketdevops.mobile.ui.theme.Spacing
 import com.rocketdevops.mobile.ui.theme.motionSpec
 import kotlin.math.roundToInt
+
+/**
+ * Fills from 0 the first time a bar or ring is shown (so a screen's progress "grows in"),
+ * then slides to every new value. Starts full at once when animations are turned off.
+ */
+@Composable
+private fun animatedProgress(target: Float): Float {
+    val reduceMotion = LocalReduceMotion.current
+    val value = remember { Animatable(if (reduceMotion) target else 0f) }
+    val spec = motionSpec<Float>(Motion.LONG)
+    LaunchedEffect(target) { value.animateTo(target, spec) }
+    return value.value
+}
 
 /**
  * 10a. ProgressBar
@@ -51,11 +67,7 @@ fun ProgressBar(
     trackColor: Color = AppTheme.colors.line,
 ) {
     val target = progress.coerceIn(0f, 1f)
-    val animated by animateFloatAsState(
-        targetValue = target,
-        animationSpec = motionSpec(Motion.LONG),
-        label = "progressBar",
-    )
+    val animated = animatedProgress(target)
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -92,11 +104,7 @@ fun ProgressRing(
     labelStyle: TextStyle = MaterialTheme.typography.labelLarge,
 ) {
     val target = progress.coerceIn(0f, 1f)
-    val animated by animateFloatAsState(
-        targetValue = target,
-        animationSpec = motionSpec(Motion.LONG),
-        label = "progressRing",
-    )
+    val animated = animatedProgress(target)
     Box(
         modifier = modifier
             .size(diameter)

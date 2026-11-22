@@ -36,6 +36,9 @@ Built as a university course project with Kotlin and Jetpack Compose.
 - **Cheat sheet:** 80 commands with search, category chips, flags and tap-to-copy.
 - **Settings:** your name, light or dark theme, text size, quiz timer and Reset progress
   (with an option to start again at the Welcome screen for the next person at an exhibition).
+- **Smooth motion:** Material 3 shared-axis transitions between screens, fade-through between tabs,
+  content that eases in, numbers that roll up when progress changes, and press feedback on buttons.
+  All of it turns off with Android's "Remove animations" setting.
 - **Accessible:** TalkBack labels, 48 dp touch targets, AA colour contrast, works at font scale 1.3.
 
 ## Architecture

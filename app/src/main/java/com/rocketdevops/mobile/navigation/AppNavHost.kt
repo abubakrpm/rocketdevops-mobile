@@ -1,10 +1,13 @@
 package com.rocketdevops.mobile.navigation
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SnackbarHostState
@@ -13,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -84,13 +88,30 @@ fun RocketDevOpsApp(
     val startDestination = remember { if (preferences.onboarded) Routes.HOME else Routes.WELCOME }
     val open: (OpenTarget) -> Unit = { navController.open(it) }
 
+    val transitions = remember(reduceMotion) { NavTransitions(reduceMotion) }
+
     AppScaffold(
         snackbarHostState = snackbarHostState,
         bottomBar = {
-            if (currentRoute in BottomNavRoutes) {
+            // The bar slides away on detail screens and back on tabs, together with the screen
+            // transition, instead of popping. While it leaves it keeps showing the last tab.
+            val onTab = currentRoute in BottomNavRoutes
+            // A plain holder (not state): remembering a value does not need to recompose anything.
+            val lastTabHolder = remember { arrayOf(Routes.HOME) }
+            if (onTab && currentRoute != null) lastTabHolder[0] = currentRoute
+            val lastTab = lastTabHolder[0]
+            AnimatedVisibility(
+                visible = onTab,
+                enter = if (reduceMotion) EnterTransition.None else
+                    expandVertically(tween(Motion.SCREEN, easing = Motion.EnterEasing), expandFrom = Alignment.Top) +
+                        fadeIn(tween(Motion.FADE_IN, delayMillis = Motion.FADE_OUT)),
+                exit = if (reduceMotion) ExitTransition.None else
+                    shrinkVertically(tween(Motion.SCREEN, easing = Motion.EnterEasing), shrinkTowards = Alignment.Top) +
+                        fadeOut(tween(Motion.FADE_OUT)),
+            ) {
                 PillBottomNav(
                     items = BottomNavItems,
-                    selectedRoute = currentRoute,
+                    selectedRoute = lastTab,
                     onSelect = { item -> navController.navigateToTab(item.route) },
                 )
             }
@@ -104,9 +125,12 @@ fun RocketDevOpsApp(
             modifier = Modifier
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
-            // Short fades (spec: 150-250 ms). None at all if the user turned animations off.
-            enterTransition = { if (reduceMotion) EnterTransition.None else fadeIn(tween(Motion.MEDIUM)) },
-            exitTransition = { if (reduceMotion) ExitTransition.None else fadeOut(tween(Motion.SHORT)) },
+            // Shared-axis slides between screens, fade-through between tabs (see NavTransitions).
+            // Instant if the user turned animations off.
+            enterTransition = transitions.enter,
+            exitTransition = transitions.exit,
+            popEnterTransition = transitions.popEnter,
+            popExitTransition = transitions.popExit,
         ) {
             // ---------- First launch ----------
             composable(Routes.WELCOME) {

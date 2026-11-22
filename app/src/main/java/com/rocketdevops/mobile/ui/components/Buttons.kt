@@ -1,8 +1,10 @@
 package com.rocketdevops.mobile.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +27,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,15 +54,22 @@ fun IconCircleButton(
     containerColor: Color = AppTheme.colors.surface,
     contentColor: Color = AppTheme.colors.ink,
 ) {
+    val interaction = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
             .size(Dimens.minTouchTarget)
             .clip(AppShapes.circle)
-            .clickable(role = Role.Button, onClick = onClick),
+            .clickable(
+                interactionSource = interaction,
+                indication = LocalIndication.current,
+                role = Role.Button,
+                onClick = onClick,
+            ),
         contentAlignment = Alignment.Center,
     ) {
         Box(
             modifier = Modifier
+                .pressScale(interaction)
                 .size(Dimens.iconCircle)
                 .clip(AppShapes.circle)
                 .background(containerColor),
@@ -87,9 +97,13 @@ fun PrimaryButton(
     leadingIcon: ImageVector? = null,
 ) {
     val colors = AppTheme.colors
+    val interaction = remember { MutableInteractionSource() }
     Button(
         onClick = onClick,
-        modifier = modifier.heightIn(min = Dimens.buttonMinHeight),
+        modifier = modifier
+            .pressScale(interaction)
+            .heightIn(min = Dimens.buttonMinHeight),
+        interactionSource = interaction,
         enabled = enabled,
         shape = AppShapes.pill,
         contentPadding = ButtonPadding,
@@ -114,9 +128,13 @@ fun SecondaryButton(
     leadingIcon: ImageVector? = null,
 ) {
     val colors = AppTheme.colors
+    val interaction = remember { MutableInteractionSource() }
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier.heightIn(min = Dimens.buttonMinHeight),
+        modifier = modifier
+            .pressScale(interaction)
+            .heightIn(min = Dimens.buttonMinHeight),
+        interactionSource = interaction,
         enabled = enabled,
         shape = AppShapes.pill,
         contentPadding = ButtonPadding,

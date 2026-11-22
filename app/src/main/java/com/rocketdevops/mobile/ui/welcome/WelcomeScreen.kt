@@ -30,6 +30,7 @@ import com.rocketdevops.mobile.ui.components.AppScaffold
 import com.rocketdevops.mobile.ui.components.NameField
 import com.rocketdevops.mobile.ui.components.PrimaryButton
 import com.rocketdevops.mobile.ui.components.TextAction
+import com.rocketdevops.mobile.ui.components.revealOnEnter
 import com.rocketdevops.mobile.ui.theme.AppTheme
 import com.rocketdevops.mobile.ui.theme.Dimens
 import com.rocketdevops.mobile.ui.theme.RocketDevOpsTheme
@@ -62,35 +63,44 @@ fun WelcomeScreen(
         Image(
             painter = painterResource(R.drawable.ic_launcher_foreground),
             contentDescription = null,
-            modifier = Modifier.size(Dimens.successBadge),
+            modifier = Modifier
+                .size(Dimens.successBadge)
+                .revealOnEnter(0),
         )
         Text(
             "Welcome to RocketDevOps",
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center,
-            modifier = Modifier.semantics { heading() },
+            modifier = Modifier
+                .revealOnEnter(1)
+                .semantics { heading() },
         )
         Text(
             "Learn Linux, Git and Docker with short lessons, quizzes and a simulated terminal. Works fully offline.",
             style = MaterialTheme.typography.bodyMedium,
             color = colors.inkSecondary,
             textAlign = TextAlign.Center,
+            modifier = Modifier.revealOnEnter(2),
         )
         Spacer(Modifier.padding(top = Spacing.xs))
-        Text("What should we call you?", style = MaterialTheme.typography.titleSmall)
+        Text("What should we call you?", style = MaterialTheme.typography.titleSmall, modifier = Modifier.revealOnEnter(3))
         NameField(
             value = name,
             onValueChange = { name = it },
             onDone = { if (name.isNotBlank()) onFinish(name) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .revealOnEnter(4),
         )
         PrimaryButton(
             text = "Continue",
             onClick = { onFinish(name) },
             enabled = name.isNotBlank(),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .revealOnEnter(5),
         )
-        TextAction("Skip for now", { onFinish("") })
+        TextAction("Skip for now", { onFinish("") }, modifier = Modifier.revealOnEnter(6))
     }
 }
 

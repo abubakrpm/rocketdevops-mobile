@@ -1,6 +1,14 @@
 package com.rocketdevops.mobile.ui.track
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,12 +19,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.PlayArrow
@@ -32,6 +39,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -50,10 +58,14 @@ import com.rocketdevops.mobile.ui.components.ListRow
 import com.rocketdevops.mobile.ui.components.LoadingSkeleton
 import com.rocketdevops.mobile.ui.components.ProgressRing
 import com.rocketdevops.mobile.ui.components.SurfaceCard
+import com.rocketdevops.mobile.ui.components.revealOnEnter
 import com.rocketdevops.mobile.ui.theme.AppTheme
 import com.rocketdevops.mobile.ui.theme.Dimens
+import com.rocketdevops.mobile.ui.theme.LocalReduceMotion
+import com.rocketdevops.mobile.ui.theme.Motion
 import com.rocketdevops.mobile.ui.theme.RocketDevOpsTheme
 import com.rocketdevops.mobile.ui.theme.Spacing
+import com.rocketdevops.mobile.ui.theme.motionSpec
 
 @Composable
 fun TrackRoute(
@@ -109,6 +121,7 @@ private fun TrackContent(
 ) {
     val colors = AppTheme.colors
     // Which module is open. Starts on the first unfinished one; survives rotation.
+    val reduceMotion = LocalReduceMotion.current
     val firstOpen = state.modules.firstOrNull { it.status == ModuleStatus.InProgress }?.id
     var expandedId by rememberSaveable { mutableStateOf(firstOpen) }
 
@@ -116,7 +129,7 @@ private fun TrackContent(
         contentPadding = PaddingValues(horizontal = Spacing.screenHorizontal, vertical = Spacing.xs),
     ) {
         item(key = "summary") {
-            SurfaceCard(modifier = Modifier.fillMaxWidth()) {
+            SurfaceCard(modifier = Modifier.fillMaxWidth().revealOnEnter(0)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
                     ProgressRing(
                         progress = state.fraction,
@@ -137,12 +150,15 @@ private fun TrackContent(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .padding(top = Spacing.md)
+                    .revealOnEnter(1)
                     .semantics { heading() },
             )
         }
-        items(state.modules, key = { it.id }) { module ->
+        itemsIndexed(state.modules, key = { _, module -> module.id }) { index, module ->
             val expanded = expandedId == module.id
-            Column {
+            // The chevron turns over instead of swapping icons.
+            val chevronTurn by animateFloatAsState(if (expanded) 180f else 0f, motionSpec(Motion.MEDIUM), label = "chevron")
+            Column(modifier = Modifier.revealOnEnter(2 + index)) {
                 ListRow(
                     title = module.title,
                     subtitle = module.subtitle,
@@ -151,9 +167,10 @@ private fun TrackContent(
                     trailing = {
                         if (module.status != ModuleStatus.Locked) {
                             Icon(
-                                if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                                Icons.Outlined.ExpandMore,
                                 contentDescription = null,
                                 tint = colors.inkSecondary,
+                                modifier = Modifier.rotate(chevronTurn),
                             )
                         }
                     },
@@ -172,7 +189,14 @@ private fun TrackContent(
                         }
                     },
                 )
-                AnimatedVisibility(visible = expanded && module.status != ModuleStatus.Locked) {
+                AnimatedVisibility(
+                    visible = expanded && module.status != ModuleStatus.Locked,
+                    enter = if (reduceMotion) EnterTransition.None else
+                        expandVertically(tween(Motion.MEDIUM, easing = Motion.StandardEasing)) +
+                            fadeIn(tween(Motion.MEDIUM, delayMillis = Motion.FADE_OUT)),
+                    exit = if (reduceMotion) ExitTransition.None else
+                        shrinkVertically(tween(Motion.MEDIUM, easing = Motion.StandardEasing)) + fadeOut(tween(Motion.FADE_OUT)),
+                ) {
                     Column(modifier = Modifier.padding(start = Spacing.xl)) {
                         module.items.forEachIndexed { index, item ->
                             ListRow(

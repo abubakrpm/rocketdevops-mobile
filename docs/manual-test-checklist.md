@@ -49,7 +49,13 @@ For each: Home, Track, Lesson, Quiz, Results, Lab, Cheat sheet, Profile, Setting
 - [ ] Reset with "Also forget the name": the app returns to the Welcome screen.
 - [ ] The About card shows no personal name or link, and says the terminal is simulated.
 
-## 8. TalkBack (accessibility)
+## 8. Motion
+- [ ] Opening a screen slides it in from the right; Back slides it out to the right. No text overlaps.
+- [ ] Switching bottom tabs fades (no sliding). The bottom bar slides away on detail screens.
+- [ ] Next quiz question slides in; finishing a lab makes the Profile numbers roll up.
+- [ ] Phone Settings > Accessibility > Remove animations ON: everything changes instantly. Turn it off again.
+
+## 9. TalkBack (accessibility)
 - [ ] Turn TalkBack on. The bottom tabs are read as "Home, tab 1 of 4" and so on.
 - [ ] Quiz options, the copy buttons in the cheat sheet and the lab quick keys all have names.
 
