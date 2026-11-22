@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mirrors the background token in Color.kt (light). Used only by the window and launcher icon. -->
+    <color name="window_background">#FFFFFF</color>
+    <color name="icon_background">#FFFFFF</color>
+    <color name="icon_foreground">#6954FF</color>
+    <color name="icon_flame">#A99DFF</color>
+</resources>

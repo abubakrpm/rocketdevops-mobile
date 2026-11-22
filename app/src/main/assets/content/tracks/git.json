@@ -1,0 +1,749 @@
+{
+  "id": "git",
+  "title": "Git",
+  "description": "Save snapshots of your work, read the history, branch safely and merge, conflicts included.",
+  "icon": "branch",
+  "modules": [
+    {
+      "id": "git-basics",
+      "title": "Your first repository",
+      "lessons": [
+        {
+          "id": "git-what-is-git",
+          "title": "What Git does",
+          "estimatedMinutes": 4,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "Git records snapshots of your project over time. Each snapshot is a commit, so you can see what changed, when and why, and go back if something breaks."
+            },
+            {
+              "type": "heading",
+              "text": "Three places a change can be"
+            },
+            {
+              "type": "paragraph",
+              "text": "The working directory holds your files as you edit them. The staging area holds the changes you picked for the next commit. The repository holds the commits."
+            },
+            {
+              "type": "code",
+              "code": "git init      # start tracking this folder\ngit status    # see what changed"
+            },
+            {
+              "type": "tip",
+              "text": "Run git status often. It always tells you what Git sees and usually suggests the next command."
+            }
+          ]
+        },
+        {
+          "id": "git-first-commit",
+          "title": "Making a commit",
+          "estimatedMinutes": 5,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "Committing is a two-step move: first stage the changes, then save them with a message."
+            },
+            {
+              "type": "code",
+              "code": "git add README.md\ngit commit -m \"Add README\""
+            },
+            {
+              "type": "paragraph",
+              "text": "git add . stages every change in the current folder. git log --oneline lists commits, one per line."
+            },
+            {
+              "type": "code",
+              "code": "git add .\ngit log --oneline"
+            },
+            {
+              "type": "tip",
+              "text": "Write messages that say why, in a short line: \"Fix login timeout\" is more useful than \"changes\"."
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "git-basics-quiz",
+        "title": "First repository quiz",
+        "questions": [
+          {
+            "id": "git-q-stage",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "Which command puts a changed file into the staging area?",
+            "options": [
+              "git commit",
+              "git add",
+              "git push",
+              "git log"
+            ],
+            "correctAnswers": [
+              "git add"
+            ],
+            "explanation": "git add stages changes. git commit then saves everything that is staged as one snapshot.",
+            "isCode": true
+          },
+          {
+            "id": "git-q-init",
+            "type": "TRUE_FALSE",
+            "prompt": "git init needs an internet connection.",
+            "correctAnswers": [
+              "False"
+            ],
+            "explanation": "git init only creates a hidden .git folder on your machine. Git works fully offline until you push or pull."
+          },
+          {
+            "id": "git-q-commit",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that commits staged changes with the message \"Add login\".",
+            "correctAnswers": [
+              "git commit -m \"Add login\""
+            ],
+            "acceptedPatterns": [
+              "^git\\s+commit\\s+-m\\s+[\"']Add login[\"']$"
+            ],
+            "explanation": "-m lets you write the commit message on the same line.",
+            "isCode": true
+          },
+          {
+            "id": "git-q-what-commit",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "What is a commit?",
+            "options": [
+              "A saved snapshot of the project with a message",
+              "A copy of the project on GitHub",
+              "A list of files Git ignores",
+              "A branch that is finished"
+            ],
+            "correctAnswers": [
+              "A saved snapshot of the project with a message"
+            ],
+            "explanation": "Each commit records the staged files at that moment, who made it and why (the message)."
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "git-lab-first-commit",
+          "title": "Your first commit",
+          "scenario": "This project folder has a README but no version control yet. Turn it into a Git repository and save the first snapshot.",
+          "startingState": {
+            "cwd": "/home/student/app",
+            "files": [
+              {
+                "path": "/home/student/app/README.md",
+                "content": "# My app"
+              }
+            ]
+          },
+          "objectives": [
+            {
+              "id": "init",
+              "label": "Create repository",
+              "check": {
+                "type": "git-initialized"
+              }
+            },
+            {
+              "id": "status",
+              "label": "Check status",
+              "check": {
+                "type": "command",
+                "pattern": "^git\\s+status$"
+              }
+            },
+            {
+              "id": "commit",
+              "label": "First commit",
+              "check": {
+                "type": "git-commit-count",
+                "atLeast": 1
+              }
+            }
+          ],
+          "hints": [
+            "First tell Git to start tracking this folder.",
+            "After git init, look at git status, stage the README with git add, then commit with a message.",
+            "Type: git init, git status, git add README.md, git commit -m \"Add README\""
+          ],
+          "solution": [
+            "git init",
+            "git status",
+            "git add README.md",
+            "git commit -m \"Add README\""
+          ]
+        }
+      ]
+    },
+    {
+      "id": "git-history",
+      "title": "Staging and history",
+      "lessons": [
+        {
+          "id": "git-staging-history",
+          "title": "Staging and history",
+          "estimatedMinutes": 5,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "Git does not save every change by itself. You choose what goes into the next commit by staging it. Think of the staging area as a box you pack before sealing it with a commit."
+            },
+            {
+              "type": "code",
+              "code": "git status              # what changed?\ngit add login.html      # stage one file\ngit add .               # stage everything here\ngit commit -m \"Add login page\""
+            },
+            {
+              "type": "paragraph",
+              "text": "Stage files separately to keep commits small: one idea per commit. Small commits are easier to review and to undo."
+            },
+            {
+              "type": "heading",
+              "text": "Reading history"
+            },
+            {
+              "type": "code",
+              "code": "git log --oneline\n3f2a91b Add login page\n9c1d0e4 Add README",
+              "caption": "Newest first"
+            },
+            {
+              "type": "tip",
+              "text": "git commit -am \"message\" stages and commits files Git already tracks in one step. Brand new files still need git add."
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "git-history-quiz",
+        "title": "Staging and history quiz",
+        "questions": [
+          {
+            "id": "git-q-add-dot",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "What does git add . do?",
+            "options": [
+              "Stages every change in this folder",
+              "Commits all files",
+              "Creates a new repository",
+              "Uploads the project to GitHub"
+            ],
+            "correctAnswers": [
+              "Stages every change in this folder"
+            ],
+            "explanation": "The dot means the current folder. Nothing is saved until you commit."
+          },
+          {
+            "id": "git-q-am-new",
+            "type": "TRUE_FALSE",
+            "prompt": "git commit -am also includes brand new files that were never added.",
+            "correctAnswers": [
+              "False"
+            ],
+            "explanation": "-a only stages files Git already tracks. New files need git add first."
+          },
+          {
+            "id": "git-q-log-oneline",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that shows the history with one line per commit.",
+            "correctAnswers": [
+              "git log --oneline"
+            ],
+            "explanation": "--oneline shows the short id and message of each commit.",
+            "isCode": true,
+            "acceptedPatterns": [
+              "^git\\s+log\\s+--oneline$"
+            ]
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "git-lab-staging",
+          "title": "One idea per commit",
+          "scenario": "Your app has one commit. Add a login page and explain how to run the app in the README, but save them as two separate commits. Then check the history.",
+          "startingState": {
+            "cwd": "/home/student/app",
+            "files": [
+              {
+                "path": "/home/student/app/README.md",
+                "content": "# My app"
+              }
+            ],
+            "git": {
+              "currentBranch": "main",
+              "branches": [
+                "main"
+              ],
+              "commits": [
+                "Add README"
+              ]
+            }
+          },
+          "objectives": [
+            {
+              "id": "first",
+              "label": "First commit",
+              "check": {
+                "type": "git-commit-count",
+                "atLeast": 2
+              }
+            },
+            {
+              "id": "second",
+              "label": "Second commit",
+              "check": {
+                "type": "git-commit-count",
+                "atLeast": 3
+              }
+            },
+            {
+              "id": "log",
+              "label": "Check history",
+              "check": {
+                "type": "command",
+                "pattern": "^git log"
+              }
+            }
+          ],
+          "hints": [
+            "Do one change, stage it with git add, commit it, then do the next change.",
+            "touch login.html creates the page. echo \"Run: npm start\" >> README.md adds a line to the README.",
+            "Type: touch login.html, git add login.html, git commit -m \"Add login page\", echo \"Run: npm start\" >> README.md, git commit -am \"Explain how to run\", git log --oneline"
+          ],
+          "solution": [
+            "touch login.html",
+            "git add login.html",
+            "git commit -m \"Add login page\"",
+            "echo \"Run: npm start\" >> README.md",
+            "git commit -am \"Explain how to run\"",
+            "git log --oneline"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "git-branches",
+      "title": "Branches",
+      "lessons": [
+        {
+          "id": "git-branching",
+          "title": "Working on a branch",
+          "estimatedMinutes": 5,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "A branch is a separate line of work. You can try a feature on a branch without touching main, then merge it when it is ready."
+            },
+            {
+              "type": "code",
+              "code": "git branch            # list branches\ngit switch -c login   # create and move to a new branch\ngit switch main       # go back to main"
+            },
+            {
+              "type": "paragraph",
+              "text": "Older tutorials use git checkout -b login. It does the same as git switch -c login."
+            },
+            {
+              "type": "heading",
+              "text": "Bringing work back"
+            },
+            {
+              "type": "code",
+              "code": "git switch main\ngit merge login"
+            },
+            {
+              "type": "tip",
+              "text": "Commit or stash your changes before switching branches, so nothing gets mixed up."
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "git-branches-quiz",
+        "title": "Branches quiz",
+        "questions": [
+          {
+            "id": "git-q-new-branch",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type one command that creates a branch called dev and switches to it.",
+            "correctAnswers": [
+              "git switch -c dev",
+              "git checkout -b dev"
+            ],
+            "explanation": "Both git switch -c dev and the older git checkout -b dev create the branch and move you onto it.",
+            "isCode": true
+          },
+          {
+            "id": "git-q-merge",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "You are on main. Which command brings the commits from the login branch into main?",
+            "options": [
+              "git merge login",
+              "git switch login",
+              "git branch login",
+              "git add login"
+            ],
+            "correctAnswers": [
+              "git merge login"
+            ],
+            "explanation": "git merge joins another branch's history into the branch you are on.",
+            "isCode": true
+          },
+          {
+            "id": "git-q-switch-files",
+            "type": "TRUE_FALSE",
+            "prompt": "Switching to another branch changes the files you see in the folder.",
+            "correctAnswers": [
+              "True"
+            ],
+            "explanation": "git switch makes the folder match the last commit of that branch."
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "git-lab-branch",
+          "title": "Build a feature on a branch",
+          "scenario": "The app already has one commit on main. Start a login feature on its own branch and commit your work there.",
+          "startingState": {
+            "cwd": "/home/student/app",
+            "files": [
+              {
+                "path": "/home/student/app/README.md",
+                "content": "# My app"
+              }
+            ],
+            "git": {
+              "currentBranch": "main",
+              "branches": [
+                "main"
+              ],
+              "commits": [
+                "Add README"
+              ]
+            }
+          },
+          "objectives": [
+            {
+              "id": "create",
+              "label": "Create branch",
+              "check": {
+                "type": "git-branch-exists",
+                "name": "login"
+              }
+            },
+            {
+              "id": "switch",
+              "label": "Switch to it",
+              "check": {
+                "type": "git-current-branch",
+                "name": "login"
+              }
+            },
+            {
+              "id": "commit",
+              "label": "Commit on it",
+              "check": {
+                "type": "git-commit-count",
+                "atLeast": 2
+              }
+            }
+          ],
+          "hints": [
+            "You need a new branch named login, and you need to be on it.",
+            "git switch -c creates and switches in one step. Then create a file, stage it and commit.",
+            "Type: git switch -c login, touch login.txt, git add login.txt, git commit -m \"Start login\""
+          ],
+          "solution": [
+            "git switch -c login",
+            "touch login.txt",
+            "git add login.txt",
+            "git commit -m \"Start login\""
+          ]
+        }
+      ]
+    },
+    {
+      "id": "git-merging",
+      "title": "Merging and conflicts",
+      "lessons": [
+        {
+          "id": "git-merge-basics",
+          "title": "Merging a branch",
+          "estimatedMinutes": 4,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "When work on a branch is ready, merge it. First switch to the branch that should receive the work, then merge the other one into it."
+            },
+            {
+              "type": "code",
+              "code": "git switch main\ngit merge login"
+            },
+            {
+              "type": "paragraph",
+              "text": "If main has not moved since the branch started, Git simply moves main forward to the branch's last commit. This is called a fast-forward."
+            },
+            {
+              "type": "paragraph",
+              "text": "If both branches have new commits, Git makes a merge commit that joins the two histories."
+            },
+            {
+              "type": "tip",
+              "text": "git branch lists your branches; the one with * is where you are."
+            }
+          ]
+        },
+        {
+          "id": "git-conflicts",
+          "title": "Fixing a conflict",
+          "estimatedMinutes": 6,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "If both branches changed the same line, Git cannot guess which version is right. It stops and marks the file:"
+            },
+            {
+              "type": "code",
+              "code": "<<<<<<< HEAD\n<h1>Good day</h1>\n=======\n<h1>Hello there</h1>\n>>>>>>> new-title",
+              "caption": "Top: your branch. Bottom: the branch being merged"
+            },
+            {
+              "type": "paragraph",
+              "text": "git status lists the files with conflicts. Fix each one by writing the final version, without the marker lines. Then stage it and commit to finish the merge."
+            },
+            {
+              "type": "code",
+              "code": "echo \"<h1>Hello and good day</h1>\" > index.html\ngit add index.html\ngit commit -m \"Merge new-title\""
+            },
+            {
+              "type": "tip",
+              "text": "Changed your mind? git merge --abort puts everything back the way it was before the merge."
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "git-merging-quiz",
+        "title": "Merging quiz",
+        "questions": [
+          {
+            "id": "git-q-merge-where",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "You want login's work in main. Which branch do you switch to before git merge login?",
+            "options": [
+              "main",
+              "login",
+              "A new branch",
+              "It does not matter"
+            ],
+            "correctAnswers": [
+              "main"
+            ],
+            "explanation": "You merge INTO the branch you are on. Switch to main, then git merge login."
+          },
+          {
+            "id": "git-q-ff",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "What is a fast-forward merge?",
+            "options": [
+              "Git moves the branch ahead because nothing else changed",
+              "A merge that skips the conflicts",
+              "A merge that deletes the other branch",
+              "A merge forced with -f"
+            ],
+            "correctAnswers": [
+              "Git moves the branch ahead because nothing else changed"
+            ],
+            "explanation": "No new commits on main means nothing to join, so main just points at the newer commit."
+          },
+          {
+            "id": "git-q-markers",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "What does <<<<<<< HEAD mark in a file?",
+            "options": [
+              "The start of your branch's version in a conflict",
+              "A comment Git adds to every file",
+              "The newest commit id",
+              "A line Git deleted"
+            ],
+            "correctAnswers": [
+              "The start of your branch's version in a conflict"
+            ],
+            "explanation": "Between <<<<<<< HEAD and ======= is your version; below it, the other branch's version."
+          },
+          {
+            "id": "git-q-after-fix",
+            "type": "TRUE_FALSE",
+            "prompt": "After fixing a conflict you git add the file and commit.",
+            "correctAnswers": [
+              "True"
+            ],
+            "explanation": "Staging the fixed file tells Git the conflict is solved; the commit finishes the merge."
+          },
+          {
+            "id": "git-q-abort",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that cancels a merge that has conflicts.",
+            "correctAnswers": [
+              "git merge --abort"
+            ],
+            "explanation": "--abort returns the files and the branch to how they were before the merge.",
+            "isCode": true,
+            "acceptedPatterns": [
+              "^git\\s+merge\\s+--abort$"
+            ]
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "git-lab-merge",
+          "title": "Ship a feature",
+          "scenario": "A teammate finished the about page on the about branch. Look at the branches, bring the work into main and check the history.",
+          "startingState": {
+            "cwd": "/home/student/app",
+            "files": [
+              {
+                "path": "/home/student/app/README.md",
+                "content": "# My app"
+              }
+            ],
+            "git": {
+              "currentBranch": "main",
+              "branches": [
+                "main",
+                "about"
+              ],
+              "commits": [
+                "Add README"
+              ],
+              "extraCommits": [
+                {
+                  "branch": "about",
+                  "message": "Add about page",
+                  "files": {
+                    "about.html": "<h1>About us</h1>"
+                  }
+                }
+              ]
+            }
+          },
+          "objectives": [
+            {
+              "id": "branches",
+              "label": "List branches",
+              "check": {
+                "type": "command",
+                "pattern": "^git branch$"
+              }
+            },
+            {
+              "id": "merge",
+              "label": "Merge about",
+              "check": {
+                "type": "git-merged",
+                "branch": "about"
+              }
+            },
+            {
+              "id": "log",
+              "label": "Check history",
+              "check": {
+                "type": "command",
+                "pattern": "^git log"
+              }
+            }
+          ],
+          "hints": [
+            "git branch shows every branch. You are already on main, the branch that should receive the work.",
+            "git merge followed by the branch name brings its commits into main.",
+            "Type: git branch, then git merge about, then git log --oneline"
+          ],
+          "solution": [
+            "git branch",
+            "git merge about",
+            "git log --oneline"
+          ]
+        },
+        {
+          "id": "git-lab-conflict",
+          "title": "Fix a merge conflict",
+          "scenario": "You and a teammate both changed the page title. Merge the new-title branch into main, fix the conflict by keeping a title that mixes both, and finish the merge.",
+          "startingState": {
+            "cwd": "/home/student/site",
+            "files": [
+              {
+                "path": "/home/student/site/index.html",
+                "content": "<h1>Welcome</h1>"
+              }
+            ],
+            "git": {
+              "currentBranch": "main",
+              "branches": [
+                "main",
+                "new-title"
+              ],
+              "commits": [
+                "Add home page"
+              ],
+              "extraCommits": [
+                {
+                  "branch": "new-title",
+                  "message": "Friendlier title",
+                  "files": {
+                    "index.html": "<h1>Hello there</h1>"
+                  }
+                },
+                {
+                  "branch": "main",
+                  "message": "Formal title",
+                  "files": {
+                    "index.html": "<h1>Good day</h1>"
+                  }
+                }
+              ]
+            }
+          },
+          "objectives": [
+            {
+              "id": "status",
+              "label": "Read the status",
+              "check": {
+                "type": "command",
+                "pattern": "^git status$"
+              }
+            },
+            {
+              "id": "stage",
+              "label": "Stage the fix",
+              "check": {
+                "type": "command",
+                "pattern": "^git add (\\./)?(index\\.html|\\.)$"
+              }
+            },
+            {
+              "id": "merged",
+              "label": "Finish the merge",
+              "check": {
+                "type": "git-merged",
+                "branch": "new-title"
+              }
+            }
+          ],
+          "hints": [
+            "Run git merge new-title. It stops with a conflict; git status and cat index.html show you where.",
+            "Overwrite index.html with your final title using echo and >, so no <<<<<<< lines are left. Then git add and git commit.",
+            "Type: git merge new-title, git status, echo \"<h1>Hello and good day</h1>\" > index.html, git add index.html, git commit -m \"Merge new-title\""
+          ],
+          "solution": [
+            "git merge new-title",
+            "git status",
+            "cat index.html",
+            "echo \"<h1>Hello and good day</h1>\" > index.html",
+            "git add index.html",
+            "git commit -m \"Merge new-title\""
+          ]
+        }
+      ]
+    }
+  ]
+}

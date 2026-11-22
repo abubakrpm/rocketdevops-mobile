@@ -1,0 +1,8 @@
+{
+  "tracks": [
+    "tracks/linux.json",
+    "tracks/git.json",
+    "tracks/docker.json"
+  ],
+  "cheatSheet": "cheatsheet.json"
+}

@@ -1,0 +1,702 @@
+{
+  "id": "docker",
+  "title": "Docker",
+  "description": "Run containers, publish ports, debug with logs and exec, and build your own images.",
+  "icon": "container",
+  "modules": [
+    {
+      "id": "docker-images",
+      "title": "Images and containers",
+      "lessons": [
+        {
+          "id": "docker-images-vs-containers",
+          "title": "Images and containers",
+          "estimatedMinutes": 4,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "An image is a read-only package: an app plus everything it needs to run. A container is a running copy of an image. One image can start many containers."
+            },
+            {
+              "type": "paragraph",
+              "text": "Think of the image as a recipe and the container as the dish you cooked from it."
+            },
+            {
+              "type": "heading",
+              "text": "Getting an image"
+            },
+            {
+              "type": "code",
+              "code": "docker pull nginx\ndocker images",
+              "caption": "Download the nginx web server image, then list local images"
+            },
+            {
+              "type": "tip",
+              "text": "Without a tag, Docker uses :latest. In real projects pin a version, such as nginx:1.27, so builds stay repeatable."
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "docker-images-quiz",
+        "title": "Images quiz",
+        "questions": [
+          {
+            "id": "docker-q-image-vs-container",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "What is a container?",
+            "options": [
+              "A running copy of an image",
+              "A file that describes how to build an image",
+              "A website that stores images",
+              "A virtual machine with its own kernel"
+            ],
+            "correctAnswers": [
+              "A running copy of an image"
+            ],
+            "explanation": "Containers are started from images. A Dockerfile describes a build, Docker Hub stores images, and containers share the host's kernel instead of having their own."
+          },
+          {
+            "id": "docker-q-many",
+            "type": "TRUE_FALSE",
+            "prompt": "You can start several containers from the same image.",
+            "correctAnswers": [
+              "True"
+            ],
+            "explanation": "The image never changes, so you can start as many containers from it as you like."
+          },
+          {
+            "id": "docker-q-pull",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that downloads the redis image.",
+            "correctAnswers": [
+              "docker pull redis"
+            ],
+            "acceptedPatterns": [
+              "^docker\\s+(image\\s+)?pull\\s+redis(:latest)?$"
+            ],
+            "explanation": "docker pull downloads an image from a registry such as Docker Hub.",
+            "isCode": true
+          },
+          {
+            "id": "docker-q-images",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that lists the images on your machine.",
+            "correctAnswers": [
+              "docker images"
+            ],
+            "explanation": "docker images (or docker image ls) lists downloaded and built images.",
+            "isCode": true,
+            "acceptedPatterns": [
+              "^docker\\s+(images|image\\s+ls)$"
+            ]
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "docker-lab-pull",
+          "title": "Download your first image",
+          "scenario": "Before you can run a web server, you need its image on this machine.",
+          "startingState": {
+            "cwd": "/home/student",
+            "docker": {
+              "registryImages": [
+                "nginx",
+                "redis",
+                "alpine"
+              ]
+            }
+          },
+          "objectives": [
+            {
+              "id": "pull",
+              "label": "Pull nginx",
+              "check": {
+                "type": "docker-image-present",
+                "image": "nginx"
+              }
+            },
+            {
+              "id": "list",
+              "label": "List images",
+              "check": {
+                "type": "command",
+                "pattern": "^docker\\s+(images|image\\s+ls)$"
+              }
+            }
+          ],
+          "hints": [
+            "Images come from a registry. There is a docker command that downloads one.",
+            "Use docker pull with the image name, then list what is stored locally.",
+            "Type: docker pull nginx, then docker images"
+          ],
+          "solution": [
+            "docker pull nginx",
+            "docker images"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "docker-run",
+      "title": "Running containers",
+      "lessons": [
+        {
+          "id": "docker-run-basics",
+          "title": "Run your first container",
+          "estimatedMinutes": 5,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "docker run starts a container from an image. -d runs it in the background and --name gives it a name you can remember."
+            },
+            {
+              "type": "code",
+              "code": "docker run -d --name web nginx\ndocker ps"
+            },
+            {
+              "type": "heading",
+              "text": "Ports"
+            },
+            {
+              "type": "paragraph",
+              "text": "A container has its own network. -p host:container publishes a port, so -p 8080:80 sends traffic from port 8080 on your machine to port 80 inside the container."
+            },
+            {
+              "type": "code",
+              "code": "docker run -d --name web -p 8080:80 nginx"
+            },
+            {
+              "type": "tip",
+              "text": "docker ps shows running containers. Add -a to also see stopped ones."
+            }
+          ]
+        },
+        {
+          "id": "docker-inspect-containers",
+          "title": "Looking inside a container",
+          "estimatedMinutes": 4,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "When a container misbehaves, its logs are the first place to look."
+            },
+            {
+              "type": "code",
+              "code": "docker logs web\ndocker logs -f web   # keep following new lines"
+            },
+            {
+              "type": "paragraph",
+              "text": "docker exec runs a command inside a running container. With -it you get an interactive shell."
+            },
+            {
+              "type": "code",
+              "code": "docker exec -it web sh"
+            },
+            {
+              "type": "code",
+              "code": "docker stop web\ndocker rm web",
+              "caption": "Stop the container, then remove it"
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "docker-run-quiz",
+        "title": "Docker basics",
+        "questions": [
+          {
+            "id": "docker-q-ps",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "Which command lists running containers?",
+            "options": [
+              "docker images",
+              "docker ps",
+              "docker ps -a",
+              "docker run"
+            ],
+            "correctAnswers": [
+              "docker ps"
+            ],
+            "explanation": "docker ps shows only running containers. Adding -a also shows stopped ones, and docker images lists images, not containers.",
+            "isCode": true
+          },
+          {
+            "id": "docker-q-port",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "In docker run -p 8080:80 nginx, which number is the port on your own machine?",
+            "options": [
+              "8080",
+              "80"
+            ],
+            "correctAnswers": [
+              "8080"
+            ],
+            "explanation": "The format is host:container. 8080 is on your machine and 80 is inside the container."
+          },
+          {
+            "id": "docker-q-detached",
+            "type": "TRUE_FALSE",
+            "prompt": "The -d flag deletes the container when it stops.",
+            "correctAnswers": [
+              "False"
+            ],
+            "explanation": "-d means detached: the container runs in the background. The flag that removes it on exit is --rm."
+          },
+          {
+            "id": "docker-q-logs",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that shows the logs of a container named api.",
+            "correctAnswers": [
+              "docker logs api"
+            ],
+            "acceptedPatterns": [
+              "^docker\\s+(container\\s+)?logs\\s+(-f\\s+)?api$"
+            ],
+            "explanation": "docker logs prints what the container wrote to its output. Add -f to keep following.",
+            "isCode": true
+          },
+          {
+            "id": "docker-q-name",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "Which flag gives a container a name you choose?",
+            "options": [
+              "--name",
+              "-n",
+              "--tag",
+              "-p"
+            ],
+            "correctAnswers": [
+              "--name"
+            ],
+            "explanation": "--name web lets you write docker logs web instead of a random id. --tag is for images, -p for ports.",
+            "isCode": true
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "docker-lab-first-container",
+          "title": "Run your first container",
+          "scenario": "Start the nginx web server in the background and make it reachable on port 8080 of this machine.",
+          "startingState": {
+            "cwd": "/home/student",
+            "docker": {
+              "registryImages": [
+                "nginx",
+                "redis",
+                "alpine"
+              ]
+            }
+          },
+          "objectives": [
+            {
+              "id": "pull",
+              "label": "Pull image",
+              "check": {
+                "type": "docker-image-present",
+                "image": "nginx"
+              }
+            },
+            {
+              "id": "run",
+              "label": "Run container",
+              "check": {
+                "type": "docker-container-running",
+                "image": "nginx"
+              }
+            },
+            {
+              "id": "port",
+              "label": "Map port",
+              "check": {
+                "type": "docker-container-running",
+                "image": "nginx",
+                "port": "8080:80"
+              }
+            }
+          ],
+          "hints": [
+            "You need the nginx image first, then a running container with a published port.",
+            "docker run -d starts it in the background. -p host:container publishes a port.",
+            "Type: docker pull nginx, then docker run -d --name web -p 8080:80 nginx"
+          ],
+          "solution": [
+            "docker pull nginx",
+            "docker run -d --name web -p 8080:80 nginx"
+          ]
+        },
+        {
+          "id": "docker-lab-debug",
+          "title": "Check on a running container",
+          "scenario": "A container called web is already running. Find it, read its logs and open a shell inside it.",
+          "startingState": {
+            "cwd": "/home/student",
+            "docker": {
+              "localImages": [
+                "nginx"
+              ],
+              "containers": [
+                {
+                  "name": "web",
+                  "image": "nginx",
+                  "running": true,
+                  "ports": [
+                    "8080:80"
+                  ]
+                }
+              ]
+            }
+          },
+          "objectives": [
+            {
+              "id": "find",
+              "label": "List containers",
+              "check": {
+                "type": "command",
+                "pattern": "^docker\\s+(ps|container\\s+ls)(\\s+-a)?$"
+              }
+            },
+            {
+              "id": "logs",
+              "label": "Read logs",
+              "check": {
+                "type": "command",
+                "pattern": "^docker\\s+(container\\s+)?logs\\s+(-f\\s+)?web$"
+              }
+            },
+            {
+              "id": "exec",
+              "label": "Open a shell",
+              "check": {
+                "type": "command",
+                "pattern": "^docker\\s+exec\\s+(-it\\s+|-i\\s+-t\\s+|-ti\\s+)?web\\s+(sh|bash)$"
+              }
+            }
+          ],
+          "hints": [
+            "Start by listing the running containers to confirm the name.",
+            "docker logs shows a container's output. docker exec runs a command inside it.",
+            "Type: docker ps, docker logs web, docker exec -it web sh"
+          ],
+          "solution": [
+            "docker ps",
+            "docker logs web",
+            "docker exec -it web sh"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "docker-ports-volumes",
+      "title": "Ports and data",
+      "lessons": [
+        {
+          "id": "docker-ports-volumes-basics",
+          "title": "Ports and volumes",
+          "estimatedMinutes": 5,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "A container has its own network and its own files. Two things connect it to your machine: published ports and volumes."
+            },
+            {
+              "type": "heading",
+              "text": "Ports"
+            },
+            {
+              "type": "paragraph",
+              "text": "-p host:container publishes a port: traffic to the host port is passed to the port inside the container."
+            },
+            {
+              "type": "code",
+              "code": "docker run -d -p 8080:80 nginx   # open localhost:8080\ndocker run -d -p 8081:80 nginx   # a second copy"
+            },
+            {
+              "type": "paragraph",
+              "text": "Two containers cannot share a host port. Change the number on the left; the right one stays the port the app listens on."
+            },
+            {
+              "type": "heading",
+              "text": "Volumes"
+            },
+            {
+              "type": "paragraph",
+              "text": "Files written inside a container are lost when the container is removed. A volume keeps them outside the container."
+            },
+            {
+              "type": "code",
+              "code": "docker run -d -v pgdata:/var/lib/postgresql/data postgres",
+              "caption": "The database files survive docker rm"
+            },
+            {
+              "type": "tip",
+              "text": "This simulator accepts -v but does not store volume data. Real Docker keeps it in the named volume, here pgdata."
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "docker-ports-quiz",
+        "title": "Ports and data quiz",
+        "questions": [
+          {
+            "id": "docker-q-second-port",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "One nginx container already uses host port 8080. How do you start a second one?",
+            "options": [
+              "docker run -d -p 8081:80 nginx",
+              "docker run -d -p 8080:81 nginx",
+              "docker run -d -p 8080:80 nginx",
+              "docker run -d nginx"
+            ],
+            "correctAnswers": [
+              "docker run -d -p 8081:80 nginx"
+            ],
+            "explanation": "Change the host port (left). nginx still listens on 80 inside its container.",
+            "isCode": true
+          },
+          {
+            "id": "docker-q-volume",
+            "type": "TRUE_FALSE",
+            "prompt": "Without a volume, files a container wrote are still there after docker rm.",
+            "correctAnswers": [
+              "False"
+            ],
+            "explanation": "Removing a container removes its files. Keep data that matters in a volume."
+          },
+          {
+            "id": "docker-q-redis-port",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that runs redis in the background and publishes port 6379 on the same host port.",
+            "correctAnswers": [
+              "docker run -d -p 6379:6379 redis"
+            ],
+            "explanation": "-d runs it in the background and -p 6379:6379 publishes the port.",
+            "isCode": true,
+            "acceptedPatterns": [
+              "^docker\\s+run(?=.*\\s-d(\\s|$))(?=.*\\s-p\\s+6379:6379(\\s|$)).*\\sredis$"
+            ]
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "docker-lab-ports",
+          "title": "Two web servers",
+          "scenario": "A web container already uses port 8080. Start a second nginx called web2 on port 8081, then check that both are running.",
+          "startingState": {
+            "cwd": "/home/student",
+            "docker": {
+              "registryImages": [
+                "nginx"
+              ],
+              "localImages": [
+                "nginx"
+              ],
+              "containers": [
+                {
+                  "name": "web",
+                  "image": "nginx",
+                  "running": true,
+                  "ports": [
+                    "8080:80"
+                  ]
+                }
+              ]
+            }
+          },
+          "objectives": [
+            {
+              "id": "name",
+              "label": "Name it web2",
+              "check": {
+                "type": "command",
+                "pattern": "^docker run .*--name web2"
+              }
+            },
+            {
+              "id": "port",
+              "label": "Serve on 8081",
+              "check": {
+                "type": "docker-container-running",
+                "image": "nginx",
+                "port": "8081:80"
+              }
+            },
+            {
+              "id": "check",
+              "label": "Check both",
+              "check": {
+                "type": "command",
+                "pattern": "^docker (ps|container ls)"
+              }
+            }
+          ],
+          "hints": [
+            "docker ps shows which host ports are already taken.",
+            "Run nginx again with -d, --name web2 and a free host port. The host port is the left number in -p.",
+            "Type: docker run -d --name web2 -p 8081:80 nginx, then docker ps"
+          ],
+          "solution": [
+            "docker run -d --name web2 -p 8081:80 nginx",
+            "docker ps"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "docker-build",
+      "title": "Building images",
+      "lessons": [
+        {
+          "id": "docker-dockerfile",
+          "title": "Writing a Dockerfile",
+          "estimatedMinutes": 6,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "A Dockerfile is the recipe for your own image. Each line is one instruction, read from top to bottom."
+            },
+            {
+              "type": "code",
+              "code": "FROM nginx\nCOPY index.html /usr/share/nginx/html/\nEXPOSE 80",
+              "caption": "Dockerfile"
+            },
+            {
+              "type": "paragraph",
+              "text": "FROM picks the base image. COPY puts your files inside. RUN runs a command while building, for example to install packages. EXPOSE notes the port, and CMD sets what starts when a container runs."
+            },
+            {
+              "type": "heading",
+              "text": "Build and run"
+            },
+            {
+              "type": "code",
+              "code": "docker build -t mysite .\ndocker run -d -p 8080:80 mysite"
+            },
+            {
+              "type": "paragraph",
+              "text": "-t gives the image a name (a tag). The dot means: use the Dockerfile in this folder."
+            },
+            {
+              "type": "tip",
+              "text": "Put lines that rarely change at the top. Docker caches each step, so rebuilding after a small change is fast."
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "docker-build-quiz",
+        "title": "Building images quiz",
+        "questions": [
+          {
+            "id": "docker-q-from",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "Which instruction comes first in a Dockerfile?",
+            "options": [
+              "FROM",
+              "RUN",
+              "COPY",
+              "CMD"
+            ],
+            "correctAnswers": [
+              "FROM"
+            ],
+            "explanation": "FROM chooses the base image everything else builds on.",
+            "isCode": true
+          },
+          {
+            "id": "docker-q-dot",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "In docker build -t mysite ., what does the dot mean?",
+            "options": [
+              "Use the Dockerfile in this folder",
+              "Build every image",
+              "The end of the command",
+              "Use the newest base image"
+            ],
+            "correctAnswers": [
+              "Use the Dockerfile in this folder"
+            ],
+            "explanation": "The last argument is the build context: the folder Docker reads the Dockerfile and files from."
+          },
+          {
+            "id": "docker-q-build",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that builds an image called api from the Dockerfile in this folder.",
+            "correctAnswers": [
+              "docker build -t api ."
+            ],
+            "explanation": "-t names the image; . is the current folder.",
+            "isCode": true,
+            "acceptedPatterns": [
+              "^docker\\s+build\\s+((-t|--tag)\\s+api\\s+\\.|\\.\\s+(-t|--tag)\\s+api)$"
+            ]
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "docker-lab-build",
+          "title": "Build your own image",
+          "scenario": "Your website file is ready. Write a Dockerfile based on nginx, build an image called mysite and run it on port 8080.",
+          "startingState": {
+            "cwd": "/home/student/site",
+            "files": [
+              {
+                "path": "/home/student/site/index.html",
+                "content": "<h1>My site</h1>"
+              }
+            ],
+            "docker": {
+              "registryImages": [
+                "nginx"
+              ]
+            }
+          },
+          "objectives": [
+            {
+              "id": "file",
+              "label": "Write Dockerfile",
+              "check": {
+                "type": "file-contains",
+                "path": "/home/student/site/Dockerfile",
+                "text": "FROM nginx"
+              }
+            },
+            {
+              "id": "build",
+              "label": "Build mysite",
+              "check": {
+                "type": "docker-image-present",
+                "image": "mysite"
+              }
+            },
+            {
+              "id": "run",
+              "label": "Run on 8080",
+              "check": {
+                "type": "docker-container-running",
+                "image": "mysite",
+                "port": "8080:80"
+              }
+            }
+          ],
+          "hints": [
+            "There is no editor here: write the Dockerfile with echo and > or >>. It must start with FROM nginx.",
+            "docker build -t mysite . builds from the Dockerfile in this folder. Then start it with docker run -d -p 8080:80.",
+            "Type: echo \"FROM nginx\" > Dockerfile, echo \"COPY index.html /usr/share/nginx/html/\" >> Dockerfile, docker build -t mysite ., docker run -d -p 8080:80 mysite"
+          ],
+          "solution": [
+            "echo \"FROM nginx\" > Dockerfile",
+            "echo \"COPY index.html /usr/share/nginx/html/\" >> Dockerfile",
+            "docker build -t mysite .",
+            "docker run -d -p 8080:80 mysite"
+          ]
+        }
+      ]
+    }
+  ]
+}

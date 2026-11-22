@@ -1,0 +1,878 @@
+{
+  "id": "linux",
+  "title": "Linux basics",
+  "description": "Move around the filesystem, manage files, search text, control processes and automate with scripts.",
+  "icon": "terminal",
+  "modules": [
+    {
+      "id": "linux-navigation",
+      "title": "Finding your way",
+      "lessons": [
+        {
+          "id": "linux-filesystem",
+          "title": "The Linux filesystem",
+          "estimatedMinutes": 4,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "Everything in Linux lives in one tree of folders that starts at the root, written as a single slash: /."
+            },
+            {
+              "type": "heading",
+              "text": "Where am I?"
+            },
+            {
+              "type": "paragraph",
+              "text": "Your shell always has a current folder, called the working directory. pwd (print working directory) shows it."
+            },
+            {
+              "type": "code",
+              "code": "pwd\n/home/student",
+              "caption": "Your home folder"
+            },
+            {
+              "type": "heading",
+              "text": "What is here?"
+            },
+            {
+              "type": "paragraph",
+              "text": "ls lists the contents of a folder. Add -l for details and -a to include hidden files, whose names start with a dot."
+            },
+            {
+              "type": "code",
+              "code": "ls\nls -la"
+            },
+            {
+              "type": "heading",
+              "text": "Moving around"
+            },
+            {
+              "type": "paragraph",
+              "text": "cd changes the working directory. cd .. goes up one level, and cd ~ (or just cd) returns to your home folder."
+            },
+            {
+              "type": "code",
+              "code": "cd projects\ncd ..\ncd ~"
+            },
+            {
+              "type": "tip",
+              "text": "A path starting with / is absolute (from the root). Any other path is relative to where you are now."
+            }
+          ]
+        },
+        {
+          "id": "linux-files",
+          "title": "Creating and copying files",
+          "estimatedMinutes": 5,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "A few short commands cover most everyday file work."
+            },
+            {
+              "type": "code",
+              "code": "mkdir notes          # make a folder\ntouch todo.txt       # make an empty file\ncat todo.txt         # print a file\ncp todo.txt copy.txt # copy\nmv copy.txt old.txt  # move or rename\nrm old.txt           # delete"
+            },
+            {
+              "type": "heading",
+              "text": "Writing text into a file"
+            },
+            {
+              "type": "paragraph",
+              "text": "echo prints text. The > sign sends that text into a file and replaces what was there. >> adds to the end instead."
+            },
+            {
+              "type": "code",
+              "code": "echo \"buy milk\" > todo.txt\necho \"fix bug\" >> todo.txt"
+            },
+            {
+              "type": "tip",
+              "text": "rm does not use a recycle bin. A deleted file is gone, so read the command twice before pressing Enter."
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "linux-navigation-quiz",
+        "title": "Finding your way quiz",
+        "questions": [
+          {
+            "id": "linux-q-pwd",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "Which command shows the folder you are currently in?",
+            "options": [
+              "ls",
+              "pwd",
+              "cd",
+              "whoami"
+            ],
+            "correctAnswers": [
+              "pwd"
+            ],
+            "explanation": "pwd prints the working directory. ls lists files, cd changes folder and whoami shows your user name.",
+            "isCode": true
+          },
+          {
+            "id": "linux-q-hidden",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "Which ls flag also shows hidden files such as .bashrc?",
+            "options": [
+              "-l",
+              "-a",
+              "-h",
+              "-r"
+            ],
+            "correctAnswers": [
+              "-a"
+            ],
+            "explanation": "-a means all, including names that start with a dot. -l shows details, -h makes sizes human readable and -r reverses the order.",
+            "isCode": true
+          },
+          {
+            "id": "linux-q-append",
+            "type": "TRUE_FALSE",
+            "prompt": "echo \"hi\" > notes.txt adds a line to the end of notes.txt.",
+            "correctAnswers": [
+              "False"
+            ],
+            "explanation": "A single > replaces the whole file. Use >> to add to the end."
+          },
+          {
+            "id": "linux-q-up",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that moves you up one folder.",
+            "correctAnswers": [
+              "cd .."
+            ],
+            "explanation": "Two dots mean the parent folder, so cd .. goes up one level.",
+            "isCode": true
+          },
+          {
+            "id": "linux-q-mkdir",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that creates a folder called logs.",
+            "correctAnswers": [
+              "mkdir logs"
+            ],
+            "acceptedPatterns": [
+              "^mkdir\\s+(-p\\s+)?logs/?$"
+            ],
+            "explanation": "mkdir makes a directory. The -p flag is optional here; it also creates missing parent folders.",
+            "isCode": true
+          },
+          {
+            "id": "linux-q-rm",
+            "type": "TRUE_FALSE",
+            "prompt": "rm moves a deleted file to a recycle bin, so you can get it back later.",
+            "correctAnswers": [
+              "False"
+            ],
+            "explanation": "The command line has no recycle bin. rm deletes the file for good, so check the name before pressing Enter."
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "linux-lab-navigate",
+          "title": "Find your way around",
+          "scenario": "You just logged in to a new server. Check where you are, move into the projects folder and make a place for your notes.",
+          "startingState": {
+            "cwd": "/home/student",
+            "files": [
+              {
+                "path": "/home/student/projects",
+                "directory": true
+              },
+              {
+                "path": "/home/student/projects/readme.txt",
+                "content": "Welcome to the projects folder."
+              }
+            ]
+          },
+          "objectives": [
+            {
+              "id": "where",
+              "label": "Print location",
+              "check": {
+                "type": "command",
+                "pattern": "^pwd$"
+              }
+            },
+            {
+              "id": "move",
+              "label": "Enter projects",
+              "check": {
+                "type": "cwd",
+                "path": "/home/student/projects"
+              }
+            },
+            {
+              "id": "notes",
+              "label": "Create notes",
+              "check": {
+                "type": "path-exists",
+                "path": "/home/student/projects/notes",
+                "directory": true
+              }
+            }
+          ],
+          "hints": [
+            "Start by asking the shell where you are. The command name is short for print working directory.",
+            "Use cd to move into the projects folder, then mkdir to create a new folder.",
+            "Type: pwd, then cd projects, then mkdir notes"
+          ],
+          "solution": [
+            "pwd",
+            "cd projects",
+            "mkdir notes"
+          ]
+        },
+        {
+          "id": "linux-lab-files",
+          "title": "Write a to-do list",
+          "scenario": "Create a to-do file, put two tasks in it, then keep a backup copy.",
+          "startingState": {
+            "cwd": "/home/student"
+          },
+          "objectives": [
+            {
+              "id": "create",
+              "label": "Create todo.txt",
+              "check": {
+                "type": "path-exists",
+                "path": "/home/student/todo.txt"
+              }
+            },
+            {
+              "id": "write",
+              "label": "Add a task",
+              "check": {
+                "type": "file-contains",
+                "path": "/home/student/todo.txt",
+                "text": "deploy"
+              }
+            },
+            {
+              "id": "backup",
+              "label": "Make a backup",
+              "check": {
+                "type": "path-exists",
+                "path": "/home/student/todo.bak"
+              }
+            }
+          ],
+          "hints": [
+            "echo with > creates a file and writes into it in one step.",
+            "Write a line containing the word deploy, then copy the file with cp.",
+            "Type: echo \"deploy the app\" > todo.txt, then cp todo.txt todo.bak"
+          ],
+          "solution": [
+            "echo \"deploy the app\" > todo.txt",
+            "cp todo.txt todo.bak"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "linux-permissions",
+      "title": "Permissions",
+      "lessons": [
+        {
+          "id": "linux-permissions-basics",
+          "title": "Who can read, write and run",
+          "estimatedMinutes": 5,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "Every file has three permission sets: for its owner, its group and everyone else. Each set can allow read (r), write (w) and execute (x)."
+            },
+            {
+              "type": "code",
+              "code": "ls -l deploy.sh\n-rw-r--r-- 1 student student 42 deploy.sh",
+              "caption": "Owner can read and write, others can only read"
+            },
+            {
+              "type": "heading",
+              "text": "Numbers instead of letters"
+            },
+            {
+              "type": "paragraph",
+              "text": "Read is 4, write is 2 and execute is 1. Add them for each set: 7 means rwx, 5 means r-x and 4 means r--."
+            },
+            {
+              "type": "code",
+              "code": "chmod 755 deploy.sh\n./deploy.sh"
+            },
+            {
+              "type": "tip",
+              "text": "755 is the usual setting for scripts: you can edit and run them, everyone else can read and run them."
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "linux-permissions-quiz",
+        "title": "Permissions quiz",
+        "questions": [
+          {
+            "id": "linux-q-755",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "What does chmod 755 give the file's owner?",
+            "options": [
+              "Read only",
+              "Read and write",
+              "Read, write and execute",
+              "Execute only"
+            ],
+            "correctAnswers": [
+              "Read, write and execute"
+            ],
+            "explanation": "The first digit is for the owner. 7 = 4 + 2 + 1, which is read, write and execute."
+          },
+          {
+            "id": "linux-q-x",
+            "type": "TRUE_FALSE",
+            "prompt": "A script needs the execute (x) permission before you can run it with ./script.sh.",
+            "correctAnswers": [
+              "True"
+            ],
+            "explanation": "Without x, the shell refuses with Permission denied. chmod +x or chmod 755 adds it."
+          },
+          {
+            "id": "linux-q-plus-x",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that makes deploy.sh executable.",
+            "correctAnswers": [
+              "chmod +x deploy.sh"
+            ],
+            "explanation": "+x adds execute permission. chmod 755 deploy.sh works too.",
+            "isCode": true,
+            "acceptedPatterns": [
+              "^chmod\\s+([ua]?\\+x|7[0-7]{2})\\s+(\\./)?deploy\\.sh$"
+            ]
+          },
+          {
+            "id": "linux-q-others",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "A file shows -rw-r----- in ls -l. What can users who are not the owner or in the group do?",
+            "options": [
+              "Nothing",
+              "Read it",
+              "Read and write it",
+              "Run it"
+            ],
+            "correctAnswers": [
+              "Nothing"
+            ],
+            "explanation": "The last three characters (---) are for everyone else: no read, no write, no execute."
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "linux-lab-permissions",
+          "title": "Make a script runnable",
+          "scenario": "A teammate left a deploy script that will not run. Fix its permissions.",
+          "startingState": {
+            "cwd": "/home/student",
+            "files": [
+              {
+                "path": "/home/student/deploy.sh",
+                "content": "#!/bin/sh\necho \"Deploying...\"",
+                "mode": "644"
+              }
+            ]
+          },
+          "objectives": [
+            {
+              "id": "inspect",
+              "label": "Check permissions",
+              "check": {
+                "type": "command",
+                "pattern": "^ls\\s+(-[a-zA-Z]*l[a-zA-Z]*)(\\s+.*)?$"
+              }
+            },
+            {
+              "id": "fix",
+              "label": "Set mode 755",
+              "check": {
+                "type": "file-mode",
+                "path": "/home/student/deploy.sh",
+                "mode": "755"
+              }
+            }
+          ],
+          "hints": [
+            "Look at the long listing of the file to see its current permissions.",
+            "ls -l shows permissions. chmod changes them; 755 lets the owner read, write and run it.",
+            "Type: ls -l, then chmod 755 deploy.sh"
+          ],
+          "solution": [
+            "ls -l",
+            "chmod 755 deploy.sh",
+            "./deploy.sh"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "linux-text",
+      "title": "Searching text",
+      "lessons": [
+        {
+          "id": "linux-grep-pipes",
+          "title": "grep, pipes and redirects",
+          "estimatedMinutes": 5,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "Logs and config files are plain text. grep prints only the lines that contain a word, so you can find the one error in thousands of lines."
+            },
+            {
+              "type": "code",
+              "code": "grep ERROR app.log      # lines with ERROR\ngrep -i error app.log   # ignore upper or lower case\ngrep -c ERROR app.log   # count the matching lines\ngrep -v DEBUG app.log   # lines WITHOUT DEBUG"
+            },
+            {
+              "type": "heading",
+              "text": "Pipes"
+            },
+            {
+              "type": "paragraph",
+              "text": "The pipe | sends the output of one command into the next one. Small tools combine into powerful ones."
+            },
+            {
+              "type": "code",
+              "code": "cat app.log | grep ERROR | wc -l\nhistory | grep docker",
+              "caption": "Count errors, or find a command you typed earlier"
+            },
+            {
+              "type": "heading",
+              "text": "Big files"
+            },
+            {
+              "type": "paragraph",
+              "text": "head shows the first lines of a file and tail the last ones. -n picks how many. New log lines are added at the end, so tail is where problems usually are."
+            },
+            {
+              "type": "code",
+              "code": "head -n 5 app.log\ntail -n 20 app.log"
+            },
+            {
+              "type": "tip",
+              "text": "Save any result with a redirect: grep ERROR app.log > errors.txt"
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "linux-text-quiz",
+        "title": "Searching text quiz",
+        "questions": [
+          {
+            "id": "linux-q-pipe",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "What does the | sign do in cat app.log | grep ERROR?",
+            "options": [
+              "Sends the output of cat into grep",
+              "Runs both commands on different files",
+              "Saves the output in a file called grep",
+              "Compares the two commands"
+            ],
+            "correctAnswers": [
+              "Sends the output of cat into grep"
+            ],
+            "explanation": "A pipe connects commands: the output of the left one becomes the input of the right one."
+          },
+          {
+            "id": "linux-q-count",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type a command that counts the lines containing ERROR in app.log.",
+            "correctAnswers": [
+              "grep -c ERROR app.log"
+            ],
+            "explanation": "grep -c counts matching lines. grep ERROR app.log | wc -l gives the same number.",
+            "isCode": true,
+            "acceptedPatterns": [
+              "^(grep\\s+-c\\s+\\\"?ERROR\\\"?\\s+app\\.log|grep\\s+\\\"?ERROR\\\"?\\s+app\\.log\\s*\\|\\s*wc\\s+-l|cat\\s+app\\.log\\s*\\|\\s*grep\\s+\\\"?ERROR\\\"?\\s*\\|\\s*wc\\s+-l)$"
+            ]
+          },
+          {
+            "id": "linux-q-grep-i",
+            "type": "TRUE_FALSE",
+            "prompt": "grep -i error finds lines with Error and ERROR.",
+            "correctAnswers": [
+              "True"
+            ],
+            "explanation": "-i ignores the difference between upper and lower case."
+          },
+          {
+            "id": "linux-q-tail",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "Which command shows the last lines of server.log?",
+            "options": [
+              "head server.log",
+              "tail server.log",
+              "cat -10 server.log",
+              "grep 10 server.log"
+            ],
+            "correctAnswers": [
+              "tail server.log"
+            ],
+            "explanation": "tail prints the end of a file (10 lines by default). head prints the beginning.",
+            "isCode": true
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "linux-lab-grep",
+          "title": "Find the errors",
+          "scenario": "The web app crashed last night. Look at the end of the log, count the error lines, and save them to errors.txt in your home folder for the team.",
+          "startingState": {
+            "cwd": "/home/student",
+            "files": [
+              {
+                "path": "/home/student/logs/app.log",
+                "content": "08:00:01 INFO  server started on port 3000\n08:05:12 INFO  user alice logged in\n08:07:40 DEBUG cache warmed\n09:15:03 WARN  slow query: 2.4 s\n10:02:55 ERROR payment service timed out\n10:03:10 INFO  retrying payment\n10:03:41 ERROR payment service timed out\n11:20:00 INFO  user bob logged in\n23:58:17 ERROR out of memory\n23:58:18 INFO  server stopped"
+              }
+            ]
+          },
+          "objectives": [
+            {
+              "id": "tail",
+              "label": "Check the end",
+              "check": {
+                "type": "command",
+                "pattern": "^tail( -n \\d+)? (logs/)?app\\.log$"
+              }
+            },
+            {
+              "id": "count",
+              "label": "Count the errors",
+              "check": {
+                "type": "command",
+                "pattern": "^(grep -c.* ERROR|grep -[a-z]*c[a-z]* .*ERROR|wc -l)"
+              }
+            },
+            {
+              "id": "save",
+              "label": "Save errors.txt",
+              "check": {
+                "type": "file-contains",
+                "path": "/home/student/errors.txt",
+                "text": "ERROR"
+              }
+            }
+          ],
+          "hints": [
+            "The log is in the logs folder. tail shows the last lines of a file.",
+            "grep ERROR finds the error lines. Add -c to count them, and use > to save them into a file.",
+            "Type: tail logs/app.log, then grep -c ERROR logs/app.log, then grep ERROR logs/app.log > errors.txt"
+          ],
+          "solution": [
+            "tail logs/app.log",
+            "grep -c ERROR logs/app.log",
+            "grep ERROR logs/app.log > errors.txt"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "linux-processes",
+      "title": "Processes",
+      "lessons": [
+        {
+          "id": "linux-processes-basics",
+          "title": "Running programs",
+          "estimatedMinutes": 5,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "Every running program is a process. Each one has a number called its PID (process ID)."
+            },
+            {
+              "type": "code",
+              "code": "ps        # programs in this terminal\nps aux    # every process on the machine"
+            },
+            {
+              "type": "paragraph",
+              "text": "In ps aux the %CPU column shows how busy a process keeps the processor. A program stuck in a loop sits near 100%."
+            },
+            {
+              "type": "heading",
+              "text": "Stopping a process"
+            },
+            {
+              "type": "paragraph",
+              "text": "kill PID politely asks a process to stop (the TERM signal). Most programs clean up and exit."
+            },
+            {
+              "type": "code",
+              "code": "kill 2210\nkill -9 2210   # force it (the KILL signal)"
+            },
+            {
+              "type": "paragraph",
+              "text": "A stuck program may ignore the polite request. kill -9 cannot be ignored, but the program gets no chance to save its work, so try plain kill first."
+            },
+            {
+              "type": "tip",
+              "text": "pgrep python prints the PID for you, and pkill python stops by name. You can only stop your own processes; root's need sudo."
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "linux-processes-quiz",
+        "title": "Processes quiz",
+        "questions": [
+          {
+            "id": "linux-q-pid",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "What is a PID?",
+            "options": [
+              "The number of a running process",
+              "A user's password",
+              "The size of a file",
+              "The folder a program lives in"
+            ],
+            "correctAnswers": [
+              "The number of a running process"
+            ],
+            "explanation": "PID means process ID. Commands like kill use it to pick the process."
+          },
+          {
+            "id": "linux-q-kill9",
+            "type": "TRUE_FALSE",
+            "prompt": "kill -9 gives the program time to save its work before it stops.",
+            "correctAnswers": [
+              "False"
+            ],
+            "explanation": "-9 sends KILL, which stops the program at once. Plain kill (TERM) is the polite way that lets it clean up."
+          },
+          {
+            "id": "linux-q-ps-aux",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that lists every process on the machine.",
+            "correctAnswers": [
+              "ps aux"
+            ],
+            "explanation": "ps alone shows only this terminal. ps aux (or ps -ef) shows everything.",
+            "isCode": true,
+            "acceptedPatterns": [
+              "^ps\\s+(aux|-aux|ax|-ef|-e|-A)$"
+            ]
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "linux-lab-processes",
+          "title": "Stop a runaway program",
+          "scenario": "The server is slow. One program is using almost all of the CPU. Find it and stop it, without touching anything else.",
+          "startingState": {
+            "cwd": "/home/student",
+            "processes": [
+              {
+                "pid": 1,
+                "command": "/sbin/init",
+                "user": "root"
+              },
+              {
+                "pid": 412,
+                "command": "/usr/sbin/sshd -D",
+                "user": "root"
+              },
+              {
+                "pid": 2210,
+                "command": "python3 backup.py",
+                "cpu": "98.7",
+                "mem": "2.3",
+                "ignoresTerm": true
+              },
+              {
+                "pid": 2305,
+                "command": "node server.js",
+                "cpu": "1.4",
+                "mem": "4.1"
+              }
+            ]
+          },
+          "objectives": [
+            {
+              "id": "list",
+              "label": "List processes",
+              "check": {
+                "type": "command",
+                "pattern": "^ps (aux|-aux|ax|-ax|-ef|-eF|-e|-A)$"
+              }
+            },
+            {
+              "id": "find",
+              "label": "Find the PID",
+              "check": {
+                "type": "command",
+                "pattern": "^(pgrep|grep) .*(backup|python)"
+              }
+            },
+            {
+              "id": "stop",
+              "label": "Stop backup.py",
+              "check": {
+                "type": "process-stopped",
+                "command": "backup.py"
+              }
+            }
+          ],
+          "hints": [
+            "ps aux lists every process. Look at the %CPU column.",
+            "Use grep or pgrep to find the PID of backup.py, then kill it. If it is still there afterwards, it ignored you: force it with -9.",
+            "Type: ps aux, then ps aux | grep backup, then kill -9 2210"
+          ],
+          "solution": [
+            "ps aux",
+            "ps aux | grep backup",
+            "kill 2210",
+            "kill -9 2210"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "linux-scripting",
+      "title": "Shell scripts",
+      "lessons": [
+        {
+          "id": "linux-scripts",
+          "title": "Your first script",
+          "estimatedMinutes": 5,
+          "body": [
+            {
+              "type": "paragraph",
+              "text": "A shell script is a text file full of commands. Running it types them for you, in order, the same way every time. That is the heart of automation."
+            },
+            {
+              "type": "code",
+              "code": "#!/bin/bash\n# make a release folder and mark it ready\nmkdir -p release\necho ready > release/status.txt",
+              "caption": "deploy.sh"
+            },
+            {
+              "type": "paragraph",
+              "text": "The first line, #!/bin/bash, tells Linux which program reads the script. Other lines starting with # are comments."
+            },
+            {
+              "type": "heading",
+              "text": "Running it"
+            },
+            {
+              "type": "paragraph",
+              "text": "Run it with bash deploy.sh, or make it executable once and run it by its path."
+            },
+            {
+              "type": "code",
+              "code": "chmod +x deploy.sh\n./deploy.sh"
+            },
+            {
+              "type": "paragraph",
+              "text": "./ means in this folder. Without it the shell only looks in the system's program folders."
+            },
+            {
+              "type": "tip",
+              "text": "There is no text editor in this app, so build a script line by line: echo \"mkdir -p release\" > deploy.sh, then add lines with >>."
+            }
+          ]
+        }
+      ],
+      "quiz": {
+        "id": "linux-scripting-quiz",
+        "title": "Shell scripts quiz",
+        "questions": [
+          {
+            "id": "linux-q-dot-slash",
+            "type": "MULTIPLE_CHOICE",
+            "prompt": "Why do you type ./deploy.sh instead of deploy.sh?",
+            "options": [
+              "./ says the script is in the current folder",
+              "./ makes the script run faster",
+              "./ gives the script root rights",
+              "./ deletes the old output first"
+            ],
+            "correctAnswers": [
+              "./ says the script is in the current folder"
+            ],
+            "explanation": "The shell looks for bare names only in system folders. ./ points at the current folder."
+          },
+          {
+            "id": "linux-q-exec-needed",
+            "type": "TRUE_FALSE",
+            "prompt": "A script needs execute permission before you can run it as ./script.sh.",
+            "correctAnswers": [
+              "True"
+            ],
+            "explanation": "Without x permission you get Permission denied. bash script.sh still works, because bash only reads the file."
+          },
+          {
+            "id": "linux-q-bash-run",
+            "type": "TYPE_THE_COMMAND",
+            "prompt": "Type the command that runs backup.sh with bash.",
+            "correctAnswers": [
+              "bash backup.sh"
+            ],
+            "explanation": "bash reads the file and runs its lines. sh backup.sh works too.",
+            "isCode": true,
+            "acceptedPatterns": [
+              "^(bash|sh)\\s+(\\./)?backup\\.sh$"
+            ]
+          }
+        ]
+      },
+      "labs": [
+        {
+          "id": "linux-lab-script",
+          "title": "Automate a release",
+          "scenario": "Write a small deploy script that creates a release folder and writes a status file into it. Make it executable and run it.",
+          "startingState": {
+            "cwd": "/home/student"
+          },
+          "objectives": [
+            {
+              "id": "write",
+              "label": "Write deploy.sh",
+              "check": {
+                "type": "file-contains",
+                "path": "/home/student/deploy.sh",
+                "text": "release"
+              }
+            },
+            {
+              "id": "exec",
+              "label": "Make it executable",
+              "check": {
+                "type": "command",
+                "pattern": "^chmod ([ua]?\\+x|7[0-7]{2}) (\\./)?deploy\\.sh$"
+              }
+            },
+            {
+              "id": "run",
+              "label": "Release created",
+              "check": {
+                "type": "path-exists",
+                "path": "/home/student/release/status.txt"
+              }
+            }
+          ],
+          "hints": [
+            "Build the script with echo: > creates the file, >> adds a line. It needs a mkdir line and a line that writes release/status.txt.",
+            "Then chmod +x deploy.sh and run it with ./deploy.sh.",
+            "Type: echo \"mkdir -p release\" > deploy.sh, then echo \"echo ready > release/status.txt\" >> deploy.sh, then chmod +x deploy.sh, then ./deploy.sh"
+          ],
+          "solution": [
+            "echo \"mkdir -p release\" > deploy.sh",
+            "echo \"echo ready > release/status.txt\" >> deploy.sh",
+            "chmod +x deploy.sh",
+            "./deploy.sh"
+          ]
+        }
+      ]
+    }
+  ]
+}

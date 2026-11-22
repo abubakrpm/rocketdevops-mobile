@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 13+ themed icon: one colour chosen by the launcher. Only the silhouette is used,
+  so the prompt is a cut-out (drawn with even-odd fill) instead of white lines.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M47,71 L54,86 L61,71 Z M42,56 L32,68 L32,76 L42,71 Z M66,56 L76,68 L76,76 L66,71 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M54,22 C63,29 66,40 66,51 L66,73 L42,73 L42,51 C42,40 45,29 54,22 Z M46,44 L48,42 L53.5,46.5 L48,51 L46,49 L49.5,46.5 Z M55,49.5 L61,49.5 L61,52.5 L55,52.5 Z" />
+</vector>

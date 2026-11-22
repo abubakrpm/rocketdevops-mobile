@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Window theme only (what shows for a split second before Compose draws).
+      All real theming is in Kotlin: ui/theme/Theme.kt.
+    -->
+    <style name="Theme.RocketDevOps" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+    </style>
+</resources>

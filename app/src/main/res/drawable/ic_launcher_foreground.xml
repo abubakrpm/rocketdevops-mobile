@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Launcher icon (spec: "a rocket with a terminal prompt, violet on white").
+  108dp adaptive-icon canvas; everything stays inside the centre 66dp safe circle,
+  so launchers that cut the icon into a circle, squircle or square never clip it.
+  Shapes: violet rocket body and fins, a lighter flame, and a white ">_" prompt on the body.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Flame -->
+    <path
+        android:fillColor="@color/icon_flame"
+        android:pathData="M47,71 L54,86 L61,71 Z" />
+    <!-- Left and right fins -->
+    <path
+        android:fillColor="@color/icon_foreground"
+        android:pathData="M42,56 L32,68 L32,76 L42,71 Z" />
+    <path
+        android:fillColor="@color/icon_foreground"
+        android:pathData="M66,56 L76,68 L76,76 L66,71 Z" />
+    <!-- Body with a rounded nose -->
+    <path
+        android:fillColor="@color/icon_foreground"
+        android:pathData="M54,22 C63,29 66,40 66,51 L66,73 L42,73 L42,51 C42,40 45,29 54,22 Z" />
+    <!-- Terminal prompt ">_" -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/icon_background"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M47,42 L52,46.5 L47,51" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/icon_background"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M55,51 L61,51" />
+</vector>
