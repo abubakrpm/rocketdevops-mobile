@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.Density
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rocketdevops.mobile.navigation.RocketDevOpsApp
 import com.rocketdevops.mobile.ui.app.AppViewModel
+import com.rocketdevops.mobile.ui.settings.AccountUi
 import com.rocketdevops.mobile.ui.theme.AppTheme
 import com.rocketdevops.mobile.ui.theme.RocketDevOpsTheme
 import com.rocketdevops.mobile.ui.theme.ThemeMode
@@ -36,6 +37,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             // Saved settings from DataStore (Stage 6): the theme and name survive closing the app.
             val preferences by appViewModel.preferences.collectAsStateWithLifecycle()
+            val user by appViewModel.currentUser.collectAsStateWithLifecycle()
+            val syncStatus by appViewModel.syncStatus.collectAsStateWithLifecycle()
             val darkTheme = when (preferences?.themeMode ?: ThemeMode.System) {
                 ThemeMode.System -> isSystemInDarkTheme()
                 ThemeMode.Light -> false
@@ -66,6 +69,12 @@ class MainActivity : ComponentActivity() {
                             onFontSizeChange = appViewModel::setFontSize,
                             onQuizTimerChange = appViewModel::setQuizTimer,
                             onResetProgress = appViewModel::resetProgress,
+                            account = AccountUi(
+                                available = appViewModel.accountsAvailable,
+                                email = user?.email,
+                                syncStatus = syncStatus,
+                            ),
+                            onSignOut = appViewModel::signOut,
                         )
                     }
                 }

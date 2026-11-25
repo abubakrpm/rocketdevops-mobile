@@ -1,12 +1,12 @@
 # RocketDevOps Mobile
 
-A free, fully offline Android app for learning **Linux, Git and Docker** with short lessons,
+A free Android app, fully usable offline, for learning **Linux, Git and Docker** with short lessons,
 live quizzes and hands-on labs in a **simulated terminal**. Mobile companion to
 [rocketdevops.vercel.app](https://rocketdevops.vercel.app).
 
 > **The terminal is simulated.** Commands are interpreted by an in-app simulator that works on
 > an in-memory fake filesystem, a fake Git repository and a fake Docker daemon. Nothing is ever
-> executed on your phone, and the app has **no internet permission**.
+> executed on your phone, and no command ever leaves it.
 
 Built as a university course project with Kotlin and Jetpack Compose.
 
@@ -36,6 +36,10 @@ Built as a university course project with Kotlin and Jetpack Compose.
 - **Cheat sheet:** 80 commands with search, category chips, flags and tap-to-copy.
 - **Settings:** your name, light or dark theme, text size, quiz timer and Reset progress
   (with an option to start again at the Welcome screen for the next person at an exhibition).
+- **Optional account (free Firebase plan):** sign in with email and password and your lessons,
+  labs, quiz scores, streak and achievements are saved online. Sign out or reinstall, sign in again
+  on any phone, and everything is back exactly as you left it. Guest progress made before signing
+  in is merged, never lost. Without an account the app works fully offline, as before.
 - **Smooth motion:** Material 3 shared-axis transitions between screens, fade-through between tabs,
   content that eases in, numbers that roll up when progress changes, and press feedback on buttons.
   All of it turns off with Android's "Remove animations" setting.
@@ -99,21 +103,31 @@ no randomness), so a lab is rebuilt exactly after Android closes the app, by rep
 | Finished items, quiz attempts, daily activity, achievements | Room | Queried and observed as Flows, survives restarts |
 | Name, theme, text size, quiz timer | DataStore (Preferences) | Small key-value settings |
 | Screen state during rotation or process death | ViewModel + SavedStateHandle | Quiz answers, lab commands, search text |
+| Copy of a signed-in learner's progress | Cloud Firestore, one document `users/{uid}` | Comes back after sign-out, reinstall or on another phone ([setup](docs/firebase-setup.md)) |
+
+Room stays the single source of truth for every screen. While signed in, each change is copied
+online about 2 seconds later; signing in merges the phone's progress with the online copy
+(finished items and achievements are a union, daily activity takes the larger count), so nothing
+earned is lost. Security rules ([firestore.rules](firestore.rules)) let each learner read and
+write only their own document.
 
 ## Tech stack
 
 Kotlin 2.1, Jetpack Compose (BOM 2024.12), Material 3, Navigation Compose, Lifecycle ViewModel,
-Room 2.6 (KSP), DataStore Preferences, kotlinx.serialization. Min SDK 26, target SDK 35.
-No paid services, no network, no analytics.
+Room 2.6 (KSP), DataStore Preferences, kotlinx.serialization, Firebase Authentication and
+Cloud Firestore (BoM 34, free Spark plan). Min SDK 26, target SDK 35.
+No paid services, no analytics, no ads. The internet is used only by the optional account.
 
 ## Open, run and test
 
 1. Install the latest stable Android Studio (it bundles a JDK; Gradle uses JDK 21).
 2. File > Open, choose this folder and let Gradle sync.
 3. Run the `app` configuration on a phone or emulator (Android 8.0 or newer).
+4. Optional, for accounts: follow [docs/firebase-setup.md](docs/firebase-setup.md) to put
+   `app/google-services.json` in place. Without it the app builds and runs in guest-only mode.
 
 ```
-.\gradlew.bat :app:testDebugUnitTest          # 189 unit tests, no phone needed
+.\gradlew.bat :app:testDebugUnitTest          # 203 unit tests, no phone needed
 .\gradlew.bat :app:connectedDebugAndroidTest  # 11 Compose UI tests, needs a phone or emulator
 .\gradlew.bat :app:assembleRelease            # release APK in app/build/outputs/apk/release/
 ```
@@ -123,7 +137,8 @@ On macOS or Linux use `./gradlew` instead of `.\gradlew.bat`.
 What the tests cover: the tokenizer and parser, every Linux, Git, Docker and process command,
 pipes and redirects, every lab's solution (each lab is played in the simulator and must finish),
 content validation of every JSON file, quiz rules and the timer, streaks, achievements and progress
-maths, the Room repository (with a fake DAO), colour contrast, and UI tests for the quiz, cheat sheet,
+maths, the Room repository (with a fake DAO), account sync (sign in and out, merging, no internet,
+reset; Firebase replaced by fakes), colour contrast, and UI tests for the quiz, cheat sheet,
 Welcome and Settings screens. Before a release, also run the
 [manual test checklist](docs/manual-test-checklist.md).
 
@@ -137,6 +152,7 @@ app/src/main/java/com/rocketdevops/mobile/
   data/content/            content models, JSON loader, validator, repository
   data/progress/           ProgressRepository, Room database, streak / achievement / progress logic
   data/prefs/              user settings in DataStore
+  data/sync/               optional accounts: merge rules, Firestore format, Firebase gateway
   terminal/                the simulated terminal and the lab objective checker
   ui/theme/                ALL design tokens: colour, type, shape, spacing, motion
   ui/components/           shared stateless components, each with light and dark previews
@@ -158,6 +174,9 @@ docs/                      content format, manual checklist, demo script, releas
 - Git has no remotes (`push`, `pull` and `clone` explain this). Docker volumes and networks are
   accepted in commands but not simulated.
 - Content is small: enough for a first course, not a full curriculum.
+- Accounts need the internet to sign in, sign out and sync. Offline changes are saved when the
+  connection returns; signing out offline asks first, because unsaved progress would be lost.
+- Sign-in is email and password only (phone/SMS sign-in costs money on Firebase).
 - English only. The release APK is signed with the debug key, which is fine for sharing from
   GitHub but not for the Play Store.
 

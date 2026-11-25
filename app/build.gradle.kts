@@ -6,6 +6,12 @@ plugins {
     alias(libs.plugins.ksp) // generates the Room database code at build time
 }
 
+// Firebase reads its project settings from app/google-services.json (see docs/firebase-setup.md).
+// Without that file the app still builds and runs: accounts are simply hidden (guest mode only).
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.rocketdevops.mobile"
     compileSdk = 35
@@ -14,8 +20,8 @@ android {
         applicationId = "com.rocketdevops.mobile"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -57,6 +63,9 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.datastore.preferences)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

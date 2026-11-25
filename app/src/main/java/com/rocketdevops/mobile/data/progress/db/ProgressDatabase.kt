@@ -126,6 +126,35 @@ abstract class ProgressDao {
     @Query("SELECT * FROM achievements")
     abstract fun observeAchievements(): Flow<List<AchievementEntity>>
 
+    // ---- whole-table reads and writes (account sign-in: copy progress to and from the cloud)
+    @Query("SELECT * FROM completed_items") abstract suspend fun allCompleted(): List<CompletedItemEntity>
+    @Query("SELECT * FROM quiz_attempts") abstract suspend fun allAttempts(): List<QuizAttemptEntity>
+    @Query("SELECT * FROM activity") abstract suspend fun allActivity(): List<ActivityEntity>
+    @Query("SELECT * FROM achievements") abstract suspend fun allAchievements(): List<AchievementEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE) abstract suspend fun insertAllCompleted(items: List<CompletedItemEntity>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) abstract suspend fun insertAllAttempts(items: List<QuizAttemptEntity>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) abstract suspend fun insertAllActivity(items: List<ActivityEntity>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) abstract suspend fun insertAllAchievements(items: List<AchievementEntity>)
+
+    /**
+     * Replaces all progress in one transaction, so screens never see a half-copied state
+     * (for example lessons from the new account but the streak of the old one).
+     */
+    @Transaction
+    open suspend fun replaceAll(
+        completed: List<CompletedItemEntity>,
+        attempts: List<QuizAttemptEntity>,
+        activity: List<ActivityEntity>,
+        achievements: List<AchievementEntity>,
+    ) {
+        deleteEverything()
+        insertAllCompleted(completed)
+        insertAllAttempts(attempts)
+        insertAllActivity(activity)
+        insertAllAchievements(achievements)
+    }
+
     // ---- reset (Settings > Reset progress, Stage 9)
     @Query("DELETE FROM completed_items") abstract suspend fun deleteCompleted()
     @Query("DELETE FROM quiz_attempts") abstract suspend fun deleteAttempts()

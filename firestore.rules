@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// RocketDevOps: each learner can read and write ONLY their own progress document,
+// users/{their uid}. Nobody can list other learners or read anyone else's progress.
+// Paste this into Firebase console > Firestore Database > Rules > Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+                            && request.auth.uid == uid
+                            && request.resource.data.keys().hasOnly(
+                                 ['schema', 'name', 'updatedAt', 'completed', 'attempts', 'activity', 'achievements'])
+                            && request.resource.data.name is string
+                            && request.resource.data.name.size() <= 24;
+    }
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

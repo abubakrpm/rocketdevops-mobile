@@ -29,6 +29,7 @@ import com.rocketdevops.mobile.R
 import com.rocketdevops.mobile.ui.components.AppScaffold
 import com.rocketdevops.mobile.ui.components.NameField
 import com.rocketdevops.mobile.ui.components.PrimaryButton
+import com.rocketdevops.mobile.ui.components.SecondaryButton
 import com.rocketdevops.mobile.ui.components.TextAction
 import com.rocketdevops.mobile.ui.components.revealOnEnter
 import com.rocketdevops.mobile.ui.theme.AppTheme
@@ -45,6 +46,9 @@ import com.rocketdevops.mobile.ui.theme.Spacing
 fun WelcomeScreen(
     onFinish: (name: String) -> Unit,
     modifier: Modifier = Modifier,
+    /** Null when accounts are not set up in this build: the account links are hidden. */
+    onSignIn: (() -> Unit)? = null,
+    onCreateAccount: (() -> Unit)? = null,
 ) {
     val colors = AppTheme.colors
     var name by rememberSaveable { mutableStateOf("") }
@@ -101,11 +105,31 @@ fun WelcomeScreen(
                 .revealOnEnter(5),
         )
         TextAction("Skip for now", { onFinish("") }, modifier = Modifier.revealOnEnter(6))
+
+        // Optional accounts: progress is kept online and comes back after signing in again.
+        if (onSignIn != null && onCreateAccount != null) {
+            Text(
+                "Already learning with an account?",
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.inkSecondary,
+                modifier = Modifier
+                    .padding(top = Spacing.sm)
+                    .revealOnEnter(7),
+            )
+            SecondaryButton(
+                text = "Sign in",
+                onClick = onSignIn,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .revealOnEnter(8),
+            )
+            TextAction("Create an account to save progress online", onCreateAccount, modifier = Modifier.revealOnEnter(8))
+        }
     }
 }
 
 @PreviewLightDark
 @Composable
 private fun WelcomeScreenPreview() = RocketDevOpsTheme {
-    AppScaffold { padding -> WelcomeScreen(onFinish = {}, modifier = Modifier.padding(padding)) }
+    AppScaffold { padding -> WelcomeScreen(onFinish = {}, modifier = Modifier.padding(padding), onSignIn = {}, onCreateAccount = {}) }
 }

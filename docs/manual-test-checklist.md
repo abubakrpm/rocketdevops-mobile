@@ -59,6 +59,17 @@ For each: Home, Track, Lesson, Quiz, Results, Lab, Cheat sheet, Profile, Setting
 - [ ] Turn TalkBack on. The bottom tabs are read as "Home, tab 1 of 4" and so on.
 - [ ] Quiz options, the copy buttons in the cheat sheet and the lab quick keys all have names.
 
+## 10. Account (needs `app/google-services.json`)
+
+- [ ] Welcome shows **Sign in** and **Create an account**; wrong password shows a clear message.
+- [ ] Create account as a guest with progress: the progress stays and Settings shows "Progress saved online".
+- [ ] Finish a lesson, Settings > Sign out: Welcome screen, all progress cleared on the phone.
+- [ ] Sign in again: every lesson, lab, quiz score, streak and achievement is back.
+- [ ] Sign in on a second phone (or after reinstalling): same progress.
+- [ ] Airplane mode, then Sign out: "Not saved online yet" dialog; Cancel keeps everything.
+- [ ] Reset progress while signed in, sign out and in again: progress stays empty.
+- [ ] "Forgot password?" sends a reset email.
+
 ## Problems found
 
 | # | Screen | What happened | Steps to repeat | Fixed? |

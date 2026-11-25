@@ -8,11 +8,13 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.rocketdevops.mobile.data.sync.LearnerIdentity
 import com.rocketdevops.mobile.ui.theme.ThemeMode
+import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import java.io.IOException
 
 /** One file on the phone ("user_prefs.preferences_pb"), created on first write. */
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_prefs")
@@ -21,7 +23,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
  * Reads and writes UserPreferences. `preferences` is a Flow, so changing the name in Settings
  * updates the Home greeting immediately, and the theme choice now survives closing the app.
  */
-class UserPreferencesRepository(context: Context) {
+class UserPreferencesRepository(context: Context) : LearnerIdentity {
     private val store = context.applicationContext.dataStore
 
     val preferences: Flow<UserPreferences> = store.data
@@ -55,6 +57,18 @@ class UserPreferencesRepository(context: Context) {
     suspend fun forgetUser() = store.edit {
         it.remove(NAME)
         it[ONBOARDED] = false
+    }
+
+    // ---- LearnerIdentity: used by AccountRepository when someone signs in or out
+
+    override suspend fun currentName(): String = preferences.first().name
+
+    override suspend fun signedIn(name: String) {
+        finishOnboarding(name)
+    }
+
+    override suspend fun signedOut() {
+        forgetUser()
     }
 
     private companion object {

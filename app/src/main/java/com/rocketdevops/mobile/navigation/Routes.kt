@@ -26,6 +26,13 @@ object Routes {
     const val SETTINGS = "settings"
     const val CATALOG = "catalog"
 
+    // Optional account: sign in or create one (Firebase)
+    const val ARG_AUTH_MODE = "mode"
+    const val AUTH_SIGN_IN = "signin"
+    const val AUTH_SIGN_UP = "signup"
+    const val AUTH = "auth?$ARG_AUTH_MODE={$ARG_AUTH_MODE}"
+    fun auth(mode: String = AUTH_SIGN_IN) = "auth?$ARG_AUTH_MODE=$mode"
+
     const val ARG_TRACK_ID = "trackId"
     const val ARG_LESSON_ID = "lessonId"
     const val ARG_QUIZ_ID = "quizId"

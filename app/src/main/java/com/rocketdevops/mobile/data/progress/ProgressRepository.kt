@@ -2,10 +2,13 @@ package com.rocketdevops.mobile.data.progress
 
 import com.rocketdevops.mobile.data.content.ContentCatalog
 import com.rocketdevops.mobile.data.progress.db.AchievementEntity
+import com.rocketdevops.mobile.data.progress.db.ActivityEntity
 import com.rocketdevops.mobile.data.progress.db.CompletedItemEntity
 import com.rocketdevops.mobile.data.progress.db.ProgressDao
 import com.rocketdevops.mobile.data.progress.db.QuizAttemptEntity
 import com.rocketdevops.mobile.data.progress.db.QuizInProgressEntity
+import com.rocketdevops.mobile.data.sync.CompletedRecord
+import com.rocketdevops.mobile.data.sync.ProgressBackup
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -113,6 +116,30 @@ class ProgressRepository(
 
     /** Settings > Reset progress: wipes every table (used for exhibition visitors). */
     suspend fun resetAll(): Unit = durable { dao.deleteEverything() }
+
+    // ---------------------------------------------------------------- backup (accounts)
+
+    /** Everything worth keeping, for the online copy of a signed-in learner. */
+    suspend fun exportBackup(): ProgressBackup = ProgressBackup(
+        completed = dao.allCompleted().map { CompletedRecord(it.itemId, it.kind, it.completedAtMillis) },
+        quizAttempts = dao.allAttempts().map { QuizAttemptRecord(it.quizId, it.score, it.total, it.wasRetry, it.atMillis) },
+        activity = dao.allActivity().associate { it.epochDay to it.count },
+        achievements = dao.allAchievements().associate { it.id to it.unlockedAtMillis },
+    )
+
+    /**
+     * Makes this phone show exactly `backup` (after signing in). Unfinished quizzes are cleared,
+     * because they belonged to whoever used the phone before. No "Achievement unlocked" popups:
+     * these were earned earlier.
+     */
+    suspend fun importBackup(backup: ProgressBackup): Unit = durable {
+        dao.replaceAll(
+            completed = backup.completed.map { CompletedItemEntity(it.itemId, it.kind, it.atMillis) },
+            attempts = backup.quizAttempts.map { QuizAttemptEntity(0, it.quizId, it.score, it.total, it.wasRetry, it.atMillis) },
+            activity = backup.activity.map { (day, count) -> ActivityEntity(day, count) },
+            achievements = backup.achievements.map { (id, at) -> AchievementEntity(id, at) },
+        )
+    }
 
     // ---------------------------------------------------------------- internals
 

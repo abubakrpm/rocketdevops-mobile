@@ -28,6 +28,8 @@ import androidx.navigation.navArgument
 import com.rocketdevops.mobile.data.prefs.FontSize
 import com.rocketdevops.mobile.data.prefs.UserPreferences
 import com.rocketdevops.mobile.data.progress.Achievement
+import com.rocketdevops.mobile.data.sync.SignOutResult
+import com.rocketdevops.mobile.ui.auth.AuthRoute
 import com.rocketdevops.mobile.ui.catalog.DesignSystemCatalogScreen
 import com.rocketdevops.mobile.ui.cheats.CheatSheetRoute
 import com.rocketdevops.mobile.ui.common.OpenTarget
@@ -41,6 +43,7 @@ import com.rocketdevops.mobile.ui.lesson.NextStep
 import com.rocketdevops.mobile.ui.profile.ProfileRoute
 import com.rocketdevops.mobile.ui.quiz.QuizResultsRoute
 import com.rocketdevops.mobile.ui.quiz.QuizRoute
+import com.rocketdevops.mobile.ui.settings.AccountUi
 import com.rocketdevops.mobile.ui.settings.SettingsActions
 import com.rocketdevops.mobile.ui.settings.SettingsScreen
 import com.rocketdevops.mobile.ui.theme.LocalReduceMotion
@@ -69,7 +72,9 @@ fun RocketDevOpsApp(
     onThemeModeChange: (ThemeMode) -> Unit,
     onFontSizeChange: (FontSize) -> Unit,
     onQuizTimerChange: (Boolean) -> Unit,
-    onResetProgress: (forgetName: Boolean, onDone: () -> Unit) -> Unit,
+    onResetProgress: (forgetName: Boolean, onDone: (savedOnline: Boolean) -> Unit) -> Unit,
+    account: AccountUi = AccountUi(),
+    onSignOut: (force: Boolean, onResult: (SignOutResult) -> Unit) -> Unit = { _, _ -> },
     navController: NavHostController = rememberNavController(),
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -138,6 +143,23 @@ fun RocketDevOpsApp(
                     onFinish = { name ->
                         onFinishOnboarding(name)
                         navController.navigate(Routes.HOME) { popUpTo(Routes.WELCOME) { inclusive = true } }
+                    },
+                    onSignIn = if (account.available) ({ navController.navigate(Routes.auth(Routes.AUTH_SIGN_IN)) }) else null,
+                    onCreateAccount = if (account.available) ({ navController.navigate(Routes.auth(Routes.AUTH_SIGN_UP)) }) else null,
+                )
+            }
+
+            // ---------- Optional account (Firebase) ----------
+            composable(
+                route = Routes.AUTH,
+                arguments = listOf(navArgument(Routes.ARG_AUTH_MODE) { type = NavType.StringType; defaultValue = Routes.AUTH_SIGN_IN }),
+            ) {
+                AuthRoute(
+                    onBack = { navController.popBackStack() },
+                    onSignedIn = {
+                        // Start fresh at Home with the account's progress (Welcome and Settings are gone).
+                        navController.navigate(Routes.HOME) { popUpTo(navController.graph.id) { inclusive = true } }
+                        showMessage("Signed in. Your progress is saved online.")
                     },
                 )
             }
@@ -249,18 +271,33 @@ fun RocketDevOpsApp(
                         onFontSizeChange = onFontSizeChange,
                         onQuizTimerChange = onQuizTimerChange,
                         onResetProgress = { forgetName ->
-                            onResetProgress(forgetName) {
-                                if (forgetName) {
+                            onResetProgress(forgetName) { savedOnline ->
+                                if (forgetName && !account.signedIn) {
                                     // Next visitor: clear the whole back stack and start at Welcome.
                                     navController.navigate(Routes.WELCOME) {
                                         popUpTo(navController.graph.id) { inclusive = true }
                                     }
+                                } else if (account.signedIn && !savedOnline) {
+                                    showMessage("Progress reset. Your account will be cleared when you are back online.")
                                 } else {
                                     showMessage("Progress reset")
                                 }
                             }
                         },
+                        onSignIn = { navController.navigate(Routes.auth(Routes.AUTH_SIGN_IN)) },
+                        onCreateAccount = { navController.navigate(Routes.auth(Routes.AUTH_SIGN_UP)) },
+                        onSignOut = { force, onResult ->
+                            onSignOut(force) { result ->
+                                if (result == SignOutResult.Done) {
+                                    // The phone is clear for the next person: start again at Welcome.
+                                    navController.navigate(Routes.WELCOME) { popUpTo(navController.graph.id) { inclusive = true } }
+                                    showMessage("Signed out. Sign in again to get your progress back.")
+                                }
+                                onResult(result)
+                            }
+                        },
                     ),
+                    account = account,
                     onBack = { navController.popBackStack() },
                     onOpenCatalog = { navController.navigate(Routes.CATALOG) },
                 )

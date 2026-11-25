@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "84587765812",
+    "project_id": "rocketdevops-mobile-abf9d",
+    "storage_bucket": "rocketdevops-mobile-abf9d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:84587765812:android:a15072f4bc313a4552ea61",
+        "android_client_info": {
+          "package_name": "com.rocketdevops.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDg1OcRJAdyYOzgnESZvGwFzoaB-jM6tgc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

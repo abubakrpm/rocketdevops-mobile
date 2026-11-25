@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  No INTERNET permission on purpose: the app is fully offline and cannot send
-  or receive any data. This is also our proof that nothing runs on a server.
+  Lessons, quizzes and the simulated terminal are fully offline.
+  INTERNET is used ONLY for optional accounts (Firebase): signing in and keeping an online copy
+  of the learner's progress. Guests never send anything. Terminal commands never leave the phone.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".RocketDevOpsApplication"

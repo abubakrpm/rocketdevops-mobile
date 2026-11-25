@@ -13,6 +13,8 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.CloudDone
+import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.RestartAlt
@@ -38,6 +40,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.rocketdevops.mobile.BuildConfig
 import com.rocketdevops.mobile.data.prefs.FontSize
 import com.rocketdevops.mobile.data.prefs.UserPreferences
+import com.rocketdevops.mobile.data.sync.SignOutResult
+import com.rocketdevops.mobile.data.sync.SyncStatus
 import com.rocketdevops.mobile.ui.components.AppScaffold
 import com.rocketdevops.mobile.ui.components.Chevron
 import com.rocketdevops.mobile.ui.components.IconCircleButton
@@ -64,6 +68,15 @@ object AppInfo {
     const val SIMULATION_NOTICE = "The terminal is simulated. Nothing runs on your device."
 }
 
+/** The account row in Settings. `available` is false when the build has no Firebase settings. */
+data class AccountUi(
+    val available: Boolean = false,
+    val email: String? = null,          // null = guest
+    val syncStatus: SyncStatus = SyncStatus.Off,
+) {
+    val signedIn: Boolean get() = email != null
+}
+
 /** Every change the Settings screen can ask for. AppViewModel saves them in DataStore or Room. */
 data class SettingsActions(
     val onNameChange: (String) -> Unit = {},
@@ -72,6 +85,10 @@ data class SettingsActions(
     val onQuizTimerChange: (Boolean) -> Unit = {},
     /** forgetName = also clear the name and show the Welcome screen (for the next visitor). */
     val onResetProgress: (forgetName: Boolean) -> Unit = {},
+    val onSignIn: () -> Unit = {},
+    val onCreateAccount: () -> Unit = {},
+    /** Answers through onResult: NotSaved means "no internet, nothing was removed". */
+    val onSignOut: (force: Boolean, onResult: (SignOutResult) -> Unit) -> Unit = { _, _ -> },
 )
 
 /**
@@ -82,6 +99,7 @@ data class SettingsActions(
 fun SettingsScreen(
     preferences: UserPreferences,
     actions: SettingsActions,
+    account: AccountUi = AccountUi(),
     onBack: () -> Unit,
     onOpenCatalog: () -> Unit,
     modifier: Modifier = Modifier,
@@ -89,6 +107,9 @@ fun SettingsScreen(
     val colors = AppTheme.colors
     var editingName by rememberSaveable { mutableStateOf(false) }
     var confirmingReset by rememberSaveable { mutableStateOf(false) }
+    var confirmingSignOut by rememberSaveable { mutableStateOf(false) }
+    var signOutNotSaved by rememberSaveable { mutableStateOf(false) }
+    var signingOut by rememberSaveable { mutableStateOf(false) }
 
     if (editingName) {
         NameDialog(
@@ -99,8 +120,34 @@ fun SettingsScreen(
     }
     if (confirmingReset) {
         ResetDialog(
+            signedIn = account.signedIn,
             onConfirm = { forgetName -> confirmingReset = false; actions.onResetProgress(forgetName) },
             onDismiss = { confirmingReset = false },
+        )
+    }
+    fun signOut(force: Boolean) {
+        signingOut = true
+        actions.onSignOut(force) { result ->
+            signingOut = false
+            if (result == SignOutResult.NotSaved) signOutNotSaved = true
+        }
+    }
+    if (confirmingSignOut) {
+        ConfirmDialog(
+            title = "Sign out?",
+            text = "Your progress is saved to your account first. Then this phone is cleared for the next person. Sign in again to get everything back.",
+            confirmLabel = "Sign out",
+            onConfirm = { confirmingSignOut = false; signOut(force = false) },
+            onDismiss = { confirmingSignOut = false },
+        )
+    }
+    if (signOutNotSaved) {
+        ConfirmDialog(
+            title = "Not saved online yet",
+            text = "There is no internet connection, so your latest progress could not be saved to your account. Connect and try again, or sign out anyway and lose the progress made since the last save.",
+            confirmLabel = "Sign out anyway",
+            onConfirm = { signOutNotSaved = false; signOut(force = true) },
+            onDismiss = { signOutNotSaved = false },
         )
     }
 
@@ -114,6 +161,10 @@ fun SettingsScreen(
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
             IconCircleButton(Icons.AutoMirrored.Outlined.ArrowBack, "Back", onBack)
             Text("Settings", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+        }
+
+        if (account.available) {
+            AccountSection(account, signingOut, actions, onSignOutClick = { confirmingSignOut = true })
         }
 
         ListRow(
@@ -240,7 +291,7 @@ private fun NameDialog(initial: String, onSave: (String) -> Unit, onDismiss: () 
  * name, so the next exhibition visitor starts at the Welcome screen.
  */
 @Composable
-private fun ResetDialog(onConfirm: (forgetName: Boolean) -> Unit, onDismiss: () -> Unit) {
+private fun ResetDialog(signedIn: Boolean, onConfirm: (forgetName: Boolean) -> Unit, onDismiss: () -> Unit) {
     val colors = AppTheme.colors
     var forgetName by rememberSaveable { mutableStateOf(false) }
     AlertDialog(
@@ -250,11 +301,16 @@ private fun ResetDialog(onConfirm: (forgetName: Boolean) -> Unit, onDismiss: () 
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                 Text(
-                    "This deletes every finished lesson, lab and quiz score, your streak and your achievements. It cannot be undone.",
+                    if (signedIn) {
+                        "This deletes every finished lesson, lab and quiz score, your streak and your achievements, on this phone AND in your account. It cannot be undone. (To hand the phone to someone else, use Sign out instead.)"
+                    } else {
+                        "This deletes every finished lesson, lab and quiz score, your streak and your achievements. It cannot be undone."
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.inkSecondary,
                 )
-                Row(
+                // Signed-in learners use Sign out to make room for the next person.
+                if (!signedIn) Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = Dimens.minTouchTarget)
@@ -298,9 +354,60 @@ private fun SettingsScreenPreview() = RocketDevOpsTheme {
         SettingsScreen(
             preferences = UserPreferences(name = "Ali", themeMode = ThemeMode.Light, quizTimer = true),
             actions = SettingsActions(),
+            account = AccountUi(available = true, email = "ali@example.com", syncStatus = SyncStatus.Saved),
             onBack = {},
             onOpenCatalog = {},
             modifier = Modifier.padding(padding),
         )
     }
+}
+
+/** Account row: "Sign in" for guests; email, sync state and "Sign out" when signed in. */
+@Composable
+private fun AccountSection(account: AccountUi, signingOut: Boolean, actions: SettingsActions, onSignOutClick: () -> Unit) {
+    val colors = AppTheme.colors
+    if (!account.signedIn) {
+        ListRow(
+            title = "Sign in or create account",
+            subtitle = "Keep your progress online and get it back on any phone",
+            leading = { IconTile(Icons.Outlined.CloudOff) },
+            trailing = { Chevron() },
+            onClick = actions.onSignIn,
+            showDivider = false,
+        )
+        return
+    }
+    val status = when (account.syncStatus) {
+        SyncStatus.Saving -> "Saving..."
+        SyncStatus.Saved -> "Progress saved online"
+        SyncStatus.Offline -> "Offline: will save when you are back online"
+        SyncStatus.Off -> "Signed in"
+    }
+    SurfaceCard(modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            IconTile(
+                if (account.syncStatus == SyncStatus.Offline) Icons.Outlined.CloudOff else Icons.Outlined.CloudDone,
+                containerColor = colors.primary,
+                contentColor = colors.onPrimary,
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(account.email.orEmpty(), style = MaterialTheme.typography.titleSmall, color = colors.ink)
+                Text(status, style = MaterialTheme.typography.bodySmall, color = colors.inkSecondary)
+            }
+        }
+        TextAction(if (signingOut) "Saving and signing out..." else "Sign out", onSignOutClick, enabled = !signingOut)
+    }
+}
+
+/** A plain yes/no dialog for account actions. */
+@Composable
+private fun ConfirmDialog(title: String, text: String, confirmLabel: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = AppTheme.colors.background,
+        title = { Text(title, style = MaterialTheme.typography.titleMedium) },
+        text = { Text(text, style = MaterialTheme.typography.bodyMedium, color = AppTheme.colors.inkSecondary) },
+        confirmButton = { TextAction(confirmLabel, onConfirm) },
+        dismissButton = { TextAction("Cancel", onDismiss) },
+    )
 }

@@ -11,6 +11,10 @@ import com.rocketdevops.mobile.data.prefs.UserPreferences
 import com.rocketdevops.mobile.data.prefs.UserPreferencesRepository
 import com.rocketdevops.mobile.data.progress.Achievement
 import com.rocketdevops.mobile.data.progress.ProgressRepository
+import com.rocketdevops.mobile.data.sync.AccountRepository
+import com.rocketdevops.mobile.data.sync.CloudUser
+import com.rocketdevops.mobile.data.sync.SignOutResult
+import com.rocketdevops.mobile.data.sync.SyncStatus
 import com.rocketdevops.mobile.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,7 +30,13 @@ import kotlinx.coroutines.launch
 class AppViewModel(
     private val prefs: UserPreferencesRepository,
     private val progress: ProgressRepository,
+    private val accounts: AccountRepository,
 ) : ViewModel() {
+
+    /** False when the app was built without Firebase settings: account buttons are hidden. */
+    val accountsAvailable: Boolean get() = accounts.isAvailable
+    val currentUser: StateFlow<CloudUser?> = accounts.currentUser
+    val syncStatus: StateFlow<SyncStatus> = accounts.syncStatus
 
     val preferences: StateFlow<UserPreferences?> =
         prefs.preferences.stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -38,7 +48,10 @@ class AppViewModel(
     }
 
     fun setName(name: String) {
-        viewModelScope.launch { prefs.setName(name) }
+        viewModelScope.launch {
+            prefs.setName(name)
+            accounts.nameChanged() // keep the online copy's name in step
+        }
     }
 
     fun setThemeMode(mode: ThemeMode) {
@@ -58,19 +71,28 @@ class AppViewModel(
      * With `forgetName` (exhibition mode) the name is cleared too and Welcome shows again.
      * `onDone` runs after the database is empty, so the app can navigate or show a message.
      */
-    fun resetProgress(forgetName: Boolean, onDone: () -> Unit) {
+    fun resetProgress(forgetName: Boolean, onDone: (savedOnline: Boolean) -> Unit) {
         viewModelScope.launch {
-            progress.resetAll()
-            if (forgetName) prefs.forgetUser()
-            onDone()
+            // Signed in: the online copy is emptied too, or signing in again would bring it back.
+            val savedOnline = accounts.resetProgress()
+            if (forgetName && currentUser.value == null) prefs.forgetUser()
+            onDone(savedOnline)
         }
+    }
+
+    /**
+     * Settings > Sign out. Saves the latest progress online first; if that fails (no internet)
+     * the result is NotSaved and nothing is removed, so the screen can ask what to do.
+     */
+    fun signOut(force: Boolean, onResult: (SignOutResult) -> Unit) {
+        viewModelScope.launch { onResult(accounts.signOut(force)) }
     }
 
     companion object {
         val Factory = viewModelFactory {
             initializer {
                 val c = (this[APPLICATION_KEY] as RocketDevOpsApplication).container
-                AppViewModel(c.userPreferences, c.progressRepository)
+                AppViewModel(c.userPreferences, c.progressRepository, c.accounts)
             }
         }
     }
