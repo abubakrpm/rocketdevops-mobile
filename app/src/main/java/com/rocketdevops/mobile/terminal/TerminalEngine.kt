@@ -53,7 +53,11 @@ fun interface CommandHandler {
  * NOTHING is ever executed on the phone: every command is Kotlin code below that only
  * changes these in-memory objects.
  */
-class TerminalEngine(environment: LabEnvironment = LabEnvironment()) {
+class TerminalEngine(
+    environment: LabEnvironment = LabEnvironment(),
+    /** First word of the prompt: "lab" in labs, "playground" in the free terminal. */
+    private val host: String = "lab",
+) {
 
     val fs = VirtualFileSystem()
     val git = GitRepository(fs)
@@ -80,7 +84,7 @@ class TerminalEngine(environment: LabEnvironment = LabEnvironment()) {
     val successfulCommands: List<String> get() = _successfulCommands
 
     /** Shown before the input, e.g. "lab ~/app $". */
-    val prompt: String get() = "lab ${fs.displayPath(fs.cwd)} $"
+    val prompt: String get() = "$host ${fs.displayPath(fs.cwd)} $"
 
     val commandNames: Set<String> get() = registry.keys
 

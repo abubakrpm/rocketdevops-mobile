@@ -326,9 +326,9 @@ private fun HintCard(hints: List<String>, total: Int, actions: LabActions) {
     }
 }
 
-/** Keys that are awkward to type on a phone keyboard. */
+/** Keys that are awkward to type on a phone keyboard. Also used by the playground. */
 @Composable
-private fun QuickKeys(actions: LabActions) {
+internal fun QuickKeys(actions: LabActions) {
     data class Key(val label: String, val description: String, val onClick: () -> Unit)
 
     val keys = listOf(

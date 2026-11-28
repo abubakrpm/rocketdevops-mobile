@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.rocketdevops.mobile.BuildConfig
 import com.rocketdevops.mobile.data.prefs.FontSize
@@ -66,6 +67,14 @@ object AppInfo {
     const val NAME = "RocketDevOps"
     const val TAGLINE = "Learn Linux, Git and Docker offline, one small step at a time."
     const val SIMULATION_NOTICE = "The terminal is simulated. Nothing runs on your device."
+
+    /** Credits at the bottom of Settings. */
+    const val CREDITS_TITLE = "Designed & developed by"
+    val CREDITS = listOf(
+        "Muhammad Saad Hussain",
+        "Muhammad Abubakar Sultan",
+        "Muhammad Muhib ur Rahman",
+    )
 }
 
 /** The account row in Settings. `available` is false when the build has no Firebase settings. */
@@ -225,6 +234,21 @@ fun SettingsScreen(
             Text("Version ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodySmall, color = colors.inkSecondary)
             Text(AppInfo.SIMULATION_NOTICE, style = MaterialTheme.typography.bodySmall, color = colors.inkSecondary)
             Text(AppInfo.TAGLINE, style = MaterialTheme.typography.bodySmall, color = colors.inkSecondary)
+        }
+
+        // Credits: centred, one name per line so they read well on small screens.
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = Spacing.xs, bottom = Spacing.lg)
+                .semantics(mergeDescendants = true) {}, // TalkBack reads the credits as one item
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Spacing.xxs),
+        ) {
+            Text(AppInfo.CREDITS_TITLE, style = MaterialTheme.typography.bodySmall, color = colors.inkSecondary)
+            AppInfo.CREDITS.forEach { name ->
+                Text(name, style = MaterialTheme.typography.titleSmall, color = colors.ink, textAlign = TextAlign.Center)
+            }
         }
     }
 }

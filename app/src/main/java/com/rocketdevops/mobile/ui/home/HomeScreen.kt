@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -138,18 +139,29 @@ private fun HomeContent(
             modifier = Modifier.revealOnEnter(2),
         )
 
+        // The free terminal: one tap to try any command (handy for visitors at an exhibition).
+        ListRow(
+            modifier = Modifier.revealOnEnter(3),
+            title = "Playground",
+            subtitle = "Free terminal: try any Linux, Git or Docker command",
+            leading = { IconTile(Icons.Outlined.Terminal) },
+            trailing = { Chevron() },
+            onClick = { onOpen(OpenTarget.Playground) },
+            showDivider = false,
+        )
+
         // Tracks
         Column {
             Text(
                 "Tracks",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
-                    .revealOnEnter(3)
+                    .revealOnEnter(4)
                     .semantics { heading() },
             )
             state.tracks.forEachIndexed { index, track ->
                 ListRow(
-                    modifier = Modifier.revealOnEnter(4 + index),
+                    modifier = Modifier.revealOnEnter(5 + index),
                     title = track.title,
                     subtitle = track.subtitle,
                     leading = { IconTile(track.icon.toImageVector()) },

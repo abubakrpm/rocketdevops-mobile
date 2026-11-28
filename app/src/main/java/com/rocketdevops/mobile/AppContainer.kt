@@ -12,6 +12,7 @@ import com.rocketdevops.mobile.data.progress.db.ProgressDatabase
 import com.rocketdevops.mobile.data.sync.AccountRepository
 import com.rocketdevops.mobile.data.sync.FirebaseAuthGateway
 import com.rocketdevops.mobile.data.sync.FirestoreProgressStore
+import com.rocketdevops.mobile.ui.playground.PlaygroundMemory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -41,6 +42,9 @@ class AppContainer(context: Context) {
     val progressStore: LearningProgressStore get() = progressRepository
 
     val userPreferences: UserPreferencesRepository by lazy { UserPreferencesRepository(appContext) }
+
+    /** The free terminal's commands, kept while the app is open (see PlaygroundMemory). */
+    val playgroundMemory = PlaygroundMemory()
 
     /** Lives as long as the app; used for saving progress online in the background. */
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)

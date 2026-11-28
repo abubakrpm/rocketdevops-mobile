@@ -25,6 +25,7 @@ object Routes {
     // Detail screens (no bottom nav)
     const val SETTINGS = "settings"
     const val CATALOG = "catalog"
+    const val PLAYGROUND = "playground"
 
     // Optional account: sign in or create one (Firebase)
     const val ARG_AUTH_MODE = "mode"

@@ -38,8 +38,8 @@ class LinuxCommands(private val engine: TerminalEngine) {
         registry["bash"] = CommandHandler(::sh)
 
         // Friendly answers for things a real server has but this simulator does not.
-        registry["sudo"] = unsupported("sudo: not needed here. This lab already has the permissions it needs.")
-        registry["exit"] = unsupported("exit: the simulated terminal stays open. Use the back button to leave the lab.")
+        registry["sudo"] = unsupported("sudo: not needed here. This simulated machine already gives you the permissions you need.")
+        registry["exit"] = unsupported("exit: the simulated terminal stays open. Use the back button to leave.")
         registry["man"] = unsupported("man: manual pages are not included. Open the Cheats tab for quick help.")
         listOf("nano", "vim", "vi").forEach {
             registry[it] = unsupported("$it: editors are not available here. Write files with: echo \"text\" > file.txt")

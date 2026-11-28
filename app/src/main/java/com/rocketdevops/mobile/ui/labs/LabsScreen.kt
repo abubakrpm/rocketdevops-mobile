@@ -4,18 +4,22 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -31,6 +35,7 @@ import com.rocketdevops.mobile.ui.components.IconTile
 import com.rocketdevops.mobile.ui.components.ListRow
 import com.rocketdevops.mobile.ui.components.LoadingSkeleton
 import com.rocketdevops.mobile.ui.components.StatusChip
+import com.rocketdevops.mobile.ui.components.SurfaceCard
 import com.rocketdevops.mobile.ui.components.revealOnEnter
 import com.rocketdevops.mobile.ui.theme.AppTheme
 import com.rocketdevops.mobile.ui.theme.Motion
@@ -45,10 +50,11 @@ import com.rocketdevops.mobile.ui.theme.motionSpec
 @Composable
 fun LabsRoute(
     onOpenLab: (labId: String) -> Unit,
+    onOpenPlayground: () -> Unit = {},
     viewModel: LabsViewModel = viewModel(factory = LabsViewModel.Factory),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LabsScreen(state = state, onOpenLab = onOpenLab, onRetry = viewModel::load)
+    LabsScreen(state = state, onOpenLab = onOpenLab, onRetry = viewModel::load, onOpenPlayground = onOpenPlayground)
 }
 
 /** Every lab, grouped by track. Stateless: it only draws `state`. */
@@ -58,6 +64,7 @@ fun LabsScreen(
     onOpenLab: (labId: String) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenPlayground: () -> Unit = {},
 ) {
     val colors = AppTheme.colors
     Column(modifier = modifier.fillMaxSize()) {
@@ -88,6 +95,30 @@ fun LabsScreen(
             ) {
                 // Position on screen, top to bottom, for the staggered entry.
                 var order = 0
+                // The free terminal comes first: it is the quickest thing to try at an exhibition.
+                val playgroundOrder = order++
+                item(key = "playground") {
+                    SurfaceCard(
+                        onClick = onOpenPlayground,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = Spacing.xs)
+                            .revealOnEnter(playgroundOrder),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                            IconTile(Icons.Outlined.Terminal, containerColor = colors.primary, contentColor = colors.onPrimary)
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Playground", style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    "Free terminal: any Linux, Git or Docker command, no objectives",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.inkSecondary,
+                                )
+                            }
+                            Chevron()
+                        }
+                    }
+                }
                 state.sections.forEach { section ->
                     val headerOrder = order++
                     val firstLabOrder = order

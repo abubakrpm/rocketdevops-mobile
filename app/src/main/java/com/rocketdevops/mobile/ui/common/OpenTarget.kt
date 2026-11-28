@@ -9,6 +9,8 @@ sealed interface OpenTarget {
     data class Quiz(val id: String) : OpenTarget
     data class Track(val id: String) : OpenTarget
     data object LabsTab : OpenTarget
+    /** The free terminal (no objectives). */
+    data object Playground : OpenTarget
 
     companion object {
         fun of(kind: ItemKind, id: String): OpenTarget = when (kind) {

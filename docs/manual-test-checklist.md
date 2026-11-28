@@ -70,6 +70,15 @@ For each: Home, Track, Lesson, Quiz, Results, Lab, Cheat sheet, Profile, Setting
 - [ ] Reset progress while signed in, sign out and in again: progress stays empty.
 - [ ] "Forgot password?" sends a reset email.
 
+## 11. Playground (free terminal)
+
+- [ ] Labs tab: the Playground card is at the top. Home: the Playground row is under Continue.
+- [ ] Tap every suggestion chip left to right, pressing Enter after each: no red error lines.
+- [ ] Free typing works: `mkdir x`, `cd x`, `echo hi > a.txt`, `cat a.txt`, `docker run -d redis`, `docker ps`.
+- [ ] Leave to the Cheats tab and come back: everything typed is still there.
+- [ ] Reset (circular arrow): confirm dialog, then the starting files and an empty history.
+- [ ] Rotate the phone: the session stays.
+
 ## Problems found
 
 | # | Screen | What happened | Steps to repeat | Fixed? |

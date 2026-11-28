@@ -40,6 +40,7 @@ import com.rocketdevops.mobile.ui.lab.LabRoute
 import com.rocketdevops.mobile.ui.labs.LabsRoute
 import com.rocketdevops.mobile.ui.lesson.LessonRoute
 import com.rocketdevops.mobile.ui.lesson.NextStep
+import com.rocketdevops.mobile.ui.playground.PlaygroundRoute
 import com.rocketdevops.mobile.ui.profile.ProfileRoute
 import com.rocketdevops.mobile.ui.quiz.QuizResultsRoute
 import com.rocketdevops.mobile.ui.quiz.QuizRoute
@@ -170,7 +171,13 @@ fun RocketDevOpsApp(
             }
             composable(Routes.LABS) {
                 // Stage 2: real screen, reading the labs from assets/content.
-                LabsRoute(onOpenLab = { labId -> navController.navigate(Routes.lab(labId)) })
+                LabsRoute(
+                    onOpenLab = { labId -> navController.navigate(Routes.lab(labId)) },
+                    onOpenPlayground = { navController.navigate(Routes.PLAYGROUND) },
+                )
+            }
+            composable(Routes.PLAYGROUND) {
+                PlaygroundRoute(onBack = { navController.popBackStack() })
             }
             composable(Routes.CHEATS) {
                 CheatSheetRoute()
@@ -330,5 +337,6 @@ private fun NavHostController.open(target: OpenTarget) {
         is OpenTarget.Quiz -> navigate(Routes.quiz(target.id))
         is OpenTarget.Track -> navigate(Routes.track(target.id))
         OpenTarget.LabsTab -> navigateToTab(Routes.LABS)
+        OpenTarget.Playground -> navigate(Routes.PLAYGROUND)
     }
 }

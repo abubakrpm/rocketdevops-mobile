@@ -29,6 +29,10 @@ Built as a university course project with Kotlin and Jetpack Compose.
   merging, a real merge conflict) and Docker (images, run, logs and exec, ports, volumes, Dockerfiles).
 - **Labs in a simulated terminal:** objectives tick green as you work, three levels of hints,
   Tab completion, command history, quick keys and realistic error messages.
+- **Playground (free terminal):** the same simulator with no objectives. Explore a small
+  project, grep a log, `git init` and commit, build and run containers, kill processes, in any
+  order. Tap-to-fill suggestions for first-time users, a reset button, and the session is kept
+  while the app is open.
 - **Live quiz:** multiple choice, true or false and "type the command". Instant feedback with an
   explanation, retry only the wrong ones, optional 30-second timer.
 - **Live progress:** daily streak, track and module progress, last-7-days chart and 7 achievements.
@@ -127,7 +131,7 @@ No paid services, no analytics, no ads. The internet is used only by the optiona
    `app/google-services.json` in place. Without it the app builds and runs in guest-only mode.
 
 ```
-.\gradlew.bat :app:testDebugUnitTest          # 203 unit tests, no phone needed
+.\gradlew.bat :app:testDebugUnitTest          # 211 unit tests, no phone needed
 .\gradlew.bat :app:connectedDebugAndroidTest  # 11 Compose UI tests, needs a phone or emulator
 .\gradlew.bat :app:assembleRelease            # release APK in app/build/outputs/apk/release/
 ```
